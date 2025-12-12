@@ -1,11 +1,13 @@
 # ================================================================
 # 0. Section: Imports
 # ================================================================
+import os
+
 from ..mouse_data import MicroCT, MRI, Segmentation
 from ._dunders import Dunders
 from ._properties import Properties
 from ._plots import Plots
-
+from ._assertions import assert_required_files, assert_no_extra_files
 
 
 # ================================================================
@@ -24,3 +26,23 @@ class Mouse(Dunders, Properties, Plots):
         }
 
         self.id = id
+
+    @classmethod
+    def from_folder(cls, id: str, folder_path: str) -> 'Mouse':
+        # Makes sure is safe to proceed
+        assert_required_files(folder_path)
+        assert_no_extra_files(folder_path)
+
+        files = os.listdir(folder_path)
+        target_files = ['_mri', '_uCT', '_seg']
+
+        for target in target_files:
+            target_file = [file for file in files if target in file][0]
+
+            file_path = os.path.join(folder_path, target_file)
+
+            if target == '_mri': mri_path = file_path
+            elif target == '_uCT': ct_path = file_path
+            elif target == '_seg': segmentations_path = file_path
+
+        return cls(id, mri_path, ct_path, segmentations_path)

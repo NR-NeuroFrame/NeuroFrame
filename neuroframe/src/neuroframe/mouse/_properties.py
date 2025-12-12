@@ -45,12 +45,14 @@ class Properties:
     # ================================================================
     @id.setter
     def id(self, value: str) -> None:
-        if not (value in self.folder): print(f"Waring: The folder path '{self.folder}' does not contain the mice ID '{value}'.")
+        # Warns if the folder path does not contain the mice ID
+        assert_id_folder_consitency(self.folder, value)
+
         self._id = value
 
     @paths.setter
     def paths(self, value: dict[str, str]) -> None:
-        # Warner if the folder paths do not match
+        # Warns if the folder paths do not match
         assert_folder_consitency(value)
 
         self._paths = value
