@@ -17,7 +17,7 @@ class Mouse(Dunders, Properties, Plots):
     def __init__(self, id: str, mri_path: str, ct_path: str, segmentations_path: str) -> None:
         self.micro_ct = MicroCT(ct_path)
         self.mri = MRI(mri_path)
-        self.segmentations = Segmentation(segmentations_path)
+        self.segmentation = Segmentation(segmentations_path)
 
         self.paths = {
             'ct_path': ct_path,

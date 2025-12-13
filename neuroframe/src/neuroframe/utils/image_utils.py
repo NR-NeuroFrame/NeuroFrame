@@ -6,7 +6,7 @@ import numpy as np
 
 
 # ================================================================
-# 1. Section: 
+# 1. Section: Operations
 # ================================================================
 def normalize(volume: np.ndarray) -> np.ndarray:
         """

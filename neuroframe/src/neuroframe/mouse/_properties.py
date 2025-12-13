@@ -21,14 +21,14 @@ class Properties:
     @property
     def data_shape(self) -> tuple[int, int, int]: 
         # Warns if the shapes do not match (designed to do every call)
-        assert_shape_consitency([self.micro_ct.shape, self.mri.shape, self.segmentations.shape])
+        assert_shape_consitency([self.micro_ct.shape, self.mri.shape, self.segmentation.shape])
 
         return self.mri.shape
     
     @property
     def voxel_size(self) -> tuple[float, float, float]:
         # Warns if the voxel sizes do not match (designed to do every call)
-        assert_voxel_size_consitency([self.micro_ct.voxel_size, self.mri.voxel_size, self.segmentations.voxel_size])
+        assert_voxel_size_consitency([self.micro_ct.voxel_size, self.mri.voxel_size, self.segmentation.voxel_size])
 
         return self.mri.voxel_size
 

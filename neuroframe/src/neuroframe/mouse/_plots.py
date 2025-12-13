@@ -13,7 +13,7 @@ class Plots:
         # Get the data from the images
         micro_ct = self.micro_ct.data
         mri = self.mri.data
-        segmentations = self.segmentations.volume
+        segmentation = self.segmentation.volume
 
         # Get the middle point of the images
         middle_point = np.array(self.data_shape) // 2
@@ -25,7 +25,7 @@ class Plots:
             "MRI - Axial", "MRI - Coronal", "MRI - Sagittal",
             "Segmentations - Axial", "Segmentations - Coronal", "Segmentations - Sagittal"
         ]
-        data = [micro_ct, micro_ct, micro_ct, mri, mri, mri, segmentations, segmentations, segmentations]
+        data = [micro_ct, micro_ct, micro_ct, mri, mri, mri, segmentation, segmentation, segmentation]
 
         slices = [
             (middle_point[0]+slice_offset, slice(None), slice(None)),
@@ -44,7 +44,7 @@ class Plots:
     def plot_segmentations_overlay(self, slice_offset: int = 20) -> None:
         # Extract Data
         micro_ct = self.micro_ct.data
-        volume = self.segmentations.volume
+        volume = self.segmentation.volume
         mri = self.mri.data
 
         z_pos = self.data_shape[0] // 2
