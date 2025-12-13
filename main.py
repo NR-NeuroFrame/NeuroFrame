@@ -8,7 +8,7 @@ print("Loaded in --- %s seconds ---" % (time.time() - start_time), end="\n\n")
 
 start_time = time.time()
 template_vol = adapt_template(mouse, ALLEN_TEMPLATE)
-aligned_mouse, seg_vol = align_to_allen(mouse)
+align_to_allen(mouse)
 print("Adapted in --- %s seconds ---" % (time.time() - start_time), end="\n\n")
 
-plot_mouse_template_overlay(template_vol, aligned_mouse.segmentation.volume)
+plot_mouse_template_overlay(template_vol, mouse.segmentation.volume)

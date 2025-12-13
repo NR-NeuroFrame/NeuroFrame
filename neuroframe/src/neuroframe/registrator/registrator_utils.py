@@ -6,6 +6,7 @@ import cv2
 import SimpleITK as sitk
 import numpy as np
 
+from ..logger import logger
 from .itk_utils import *
 
 
@@ -32,7 +33,7 @@ def apply_shape(fixed_image: sitk.Image, moving_image: sitk.Image) -> sitk.Image
     Works for sitk.Image inputs.
     """
     if moving_image.GetSize() != fixed_image.GetSize():
-        print("     Warning: The template and skull surface have different shapes. Resampling the fixed image to match the moving image.")
+        logger.warning("The template and skull surface have different shapes. Resampling the fixed image to match the moving image.")
         resampler = sitk.ResampleImageFilter()
         resampler.SetReferenceImage(fixed_image)
         resampler.SetInterpolator(sitk.sitkLinear)

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 from SimpleITK import ImageRegistrationMethod
 
+from ..logger import logger
 from .registrator_utils import *
 from .types import Rigid, Affine, BSpline
 
@@ -21,7 +22,7 @@ class Registrator(Rigid, Affine, BSpline):
     def __init__(self, 
                  method: str = 'rigid', 
                  loss: str = 'MI', 
-                 optimizer: str = 'LBFGS', 
+                 optimizer: str = 'GD', 
                  dimension: int = 3, 
                  view_update: bool = False, 
                  check_shape: bool = False, 
@@ -78,9 +79,7 @@ class Registrator(Rigid, Affine, BSpline):
         if(self.method == 'rigid'): results = self.rigid_transform(fixed_image, moving_image)
         elif(self.method == 'deform'): results = self.deform_transform(fixed_image, moving_image)
         elif(self.method == 'affine'): results = self.affine_transform(fixed_image, moving_image)
-        else: print("❌ Method not supported yet, alter the class to add it.")
-
-        if(self.verbose >= 1): print('\n')
+        else: logger.error(f"Method {self.method} not supported yet.")
 
         return results
 

@@ -1,11 +1,7 @@
 # ================================================================
 # 0. Section: Imports
 # ================================================================
-import os
-
-import matplotlib.pyplot as plt
 import numpy as np
-import nibabel as nib
 import SimpleITK as sitk
 
 from scipy.ndimage import zoom
@@ -32,14 +28,14 @@ def align_to_allen(mouse: Mouse, template: Segmentation = ALLEN_TEMPLATE) -> Mou
 
     # Does the rigid registration
     rigid_registration = Registrator(multiple_resolutions=True)
-    seg_vol, transform = rigid_registration.register(template_volume, mouse.segmentation.volume)
+    _, transform = rigid_registration.register(template_volume, mouse.segmentation.volume)
 
     logger.detail(f"Obtained Transform: {transform.GetParameters()}")
 
     # Applies the transformation to the mice
     mouse = register_mice(mouse, template_volume, transform)
 
-    return mouse, seg_vol
+    return mouse
 
 
 # ──────────────────────────────────────────────────────

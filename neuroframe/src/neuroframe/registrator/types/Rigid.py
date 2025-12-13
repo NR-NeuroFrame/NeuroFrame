@@ -43,9 +43,8 @@ class Rigid(RegistratorSupport):
         # Convert back to numpy
         registered_np = sitk.GetArrayFromImage(resampled_image)
 
-        if(self.verbose >= 3): print(f"        ✔︎ Final metric value: {registration_method.GetMetricValue()}")
-        if(self.verbose >= 3): print(f"        ✔︎ Optimizer's stopping condition, {registration_method.GetOptimizerStopConditionDescription()}")
-        if(self.verbose >= 2): print(f"    ✅ Rigid Registration completed ({registration_time:.2f} seconds)\n")
+        logger.info(f"Final metric value: {registration_method.GetMetricValue()}")
+        logger.info(f"Optimizer's stopping condition, {registration_method.GetOptimizerStopConditionDescription()}")
 
         return registered_np, transform
     
@@ -59,7 +58,7 @@ class Rigid(RegistratorSupport):
         registration_method = self.define_registration_interpolator(registration_method)
         registration_method = self.define_optimizer(registration_method)
         registration_method.SetMetricSamplingPercentage(self.sampling_percentage)
-        registration_method.SetOptimizerScalesFromPhysicalShift()
+        if(self.optimizer != 'LBFGS'): registration_method.SetOptimizerScalesFromPhysicalShift()
 
         # Connect all of the observers so that we can perform plotting during registration.
         if(self.view_update): registration_method = view_registration(registration_method)
