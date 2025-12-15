@@ -34,7 +34,7 @@ class Rigid(RegistratorSupport):
         start_time = time.time()
         transform = registration_method.Execute(fixed_image, moving_image)
         registration_time = time.time() - start_time
-        logger.debug("Rigid registration executed.")
+        logger.debug(f"Rigid registration executed in {registration_time}.")
 
         # Resample moving image
         resampled_image = self.resample(fixed_image, moving_image, transform)
@@ -48,6 +48,10 @@ class Rigid(RegistratorSupport):
 
         return registered_np, transform
     
+
+    # ──────────────────────────────────────────────────────
+    # 1.1 Subsection: Setup Rigid Registration
+    # ──────────────────────────────────────────────────────
     def setup_rigid(self, fixed_image: sitk.Image, moving_image: sitk.Image) -> sitk.ImageRegistrationMethod:
         
         # Initialize the registration method

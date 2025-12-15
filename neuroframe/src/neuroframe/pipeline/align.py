@@ -109,7 +109,7 @@ def align_to_allen(mouse: Mouse, template: Segmentation = ALLEN_TEMPLATE) -> Mou
     template_volume = adapt_template(mouse, template)
 
     # Does the rigid registration
-    rigid_registration = Registrator(multiple_resolutions=True)
+    rigid_registration = Registrator(method='bspline', multiple_resolutions=True)
     _, transform = rigid_registration.register(template_volume, mouse.segmentation.volume)
 
     logger.detail(f"Obtained Transform: {transform.GetParameters()}")
