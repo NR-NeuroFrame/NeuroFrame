@@ -7,7 +7,6 @@ from scipy.ndimage import gaussian_filter
 
 from ..mouse import Mouse
 from ..logger import logger
-from ..plots.skull_sanity import plot_skull
 
 
 
@@ -15,6 +14,78 @@ from ..plots.skull_sanity import plot_skull
 # 1. Section: Extract Skull
 # ================================================================
 def extract_skull(mouse: Mouse, method:str = 'cumsum') -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+    """Extract a 2D skull projection map from 3D micro-CT data.
+
+    This function applies a specified projection method to the micro-CT data
+    of a mouse to generate a 2D representation of the skull.
+
+    Parameters
+    ----------
+    mouse : Mouse
+        An object representing the mouse, which must contain a `micro_ct`
+        attribute holding the 3D scan data as a NumPy array.
+    method : str, optional
+        The projection method to use. Valid options are 'mean', 'view', and
+        'cumsum'. If an invalid method is provided, it defaults to 'cumsum'.
+        Default is 'cumsum'.
+
+    Returns
+    -------
+    np.ndarray or tuple[np.ndarray, np.ndarray]
+        - If `method` is 'view', returns a tuple containing the projection map
+          and the depth map, both as NumPy arrays.
+        - For all other methods, returns the projection map as a single
+          NumPy array.
+
+    Raises
+    ------
+    AttributeError
+        If `mouse` does not have a `micro_ct.data` attribute.
+
+    Side Effects
+    ------------
+    Logs a warning message if an invalid `method` is specified, indicating
+    that the function will default to the 'cumsum' method.
+
+    Notes
+    -----
+    The 'cumsum' method uses hardcoded parameters `[30, 20, 4000]`. The
+    behavior of the underlying projection functions (`mean_projection`,
+    `view_projection`, `cumsum_projection`) is not detailed here.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from unittest.mock import MagicMock
+    >>> # Create a mock Mouse object with mock micro_ct data
+    >>> mock_mouse = MagicMock()
+    >>> mock_mouse.micro_ct.data = np.random.rand(100, 100, 100)
+
+    >>> # Assume the existence of the projection helper functions
+    >>> # For demonstration, we'll mock them to return predictable shapes
+    >>> mean_projection = lambda x: np.mean(x, axis=0)
+    >>> view_projection = lambda x: (np.max(x, axis=0), np.argmax(x, axis=0))
+    >>> cumsum_projection = lambda x, params: np.sum(x, axis=0)
+
+    >>> # Example with the default 'cumsum' method
+    >>> projection_map = extract_skull(mock_mouse, method='cumsum')
+    >>> print(projection_map.shape)
+    (100, 100)
+
+    >>> # Example with the 'view' method, returning two maps
+    >>> projection_map, depth_map = extract_skull(mock_mouse, method='view')
+    >>> print(projection_map.shape)
+    (100, 100)
+    >>> print(depth_map.shape)
+    (100, 100)
+
+    >>> # Example with an invalid method, which defaults to 'cumsum'
+    >>> projection_map = extract_skull(mock_mouse, method='invalid_method')
+    # A warning would be logged here.
+    >>> print(projection_map.shape)
+    (100, 100)
+    """
+    
     # Extracts the data from the mice object
     micro_ct = mouse.micro_ct.data
     depth_map = None
@@ -139,6 +210,6 @@ def auto_thr_projection(micro_ct: np.ndarray) -> float:
     depth = np.argmax(gradient)
     threshold = points[depth]
 
-    print(f"Auto-thresholding at: {threshold}")
+    logger.info(f"Auto-thresholding at: {threshold}")
 
     return threshold

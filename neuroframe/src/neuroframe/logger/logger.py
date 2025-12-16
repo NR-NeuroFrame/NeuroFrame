@@ -30,7 +30,7 @@ logger.propagate = False
 if not logger.handlers:
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(console_format)
-    console_handler.setLevel("INFO")
+    console_handler.setLevel("CRITICAL")
 
     file_handler = logging.handlers.TimedRotatingFileHandler(LOG_PATH / "package.log", when='midnight', encoding="utf-8")
     file_handler.setFormatter(detail_format)

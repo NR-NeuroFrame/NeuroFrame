@@ -129,10 +129,7 @@ def get_bregma_lambda(mouse: Mouse, skull_surface: np.ndarray) -> tuple[np.ndarr
 # ──────────────────────────────────────────────────────
 # 1.1 Subsection: Deformation Map Extraction
 # ──────────────────────────────────────────────────────
-def extract_deformation_map(skull_surface: np.ndarray, sutures_registration: None | Registrator = None) -> sitk.Transform:
-    # Initilize the sutures registrator if not provided
-    if sutures_registration is None: sutures_registration = SUTURE_REGISTRATOR
-        
+def extract_deformation_map(skull_surface: np.ndarray, sutures_registration: Registrator = SUTURE_REGISTRATOR) -> sitk.Transform:    
     # Bspline registration to the suture template
     _, sutures_transform = sutures_registration.register(skull_surface, SUTURE_TEMPLATE)
 
