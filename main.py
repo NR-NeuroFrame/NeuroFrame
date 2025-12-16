@@ -14,4 +14,4 @@ plot_skull(skull)
 
 bregma, lambda_ = get_bregma_lambda(mouse, skull)
 
-inspect_bl(skull, bregma, lambda_)
+plot_bl(skull, bregma, lambda_)

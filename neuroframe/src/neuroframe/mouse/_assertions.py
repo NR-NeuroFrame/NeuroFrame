@@ -23,7 +23,9 @@ def assert_shape_consitency(shapes: list[tuple[int, int, int]]) -> None:
 
 def assert_voxel_size_consitency(voxel_sizes: list[tuple[float, float, float]]) -> None:
     # Check if all voxel sizes match
-    if not all(voxel_size == voxel_sizes[0] for voxel_size in voxel_sizes): logger.warning("The voxel sizes of the mouse data do not match, defaulted to MRI voxel size.")
+    if not all(voxel_size == voxel_sizes[0] for voxel_size in voxel_sizes): 
+        logger.warning("The voxel sizes of the mouse data do not match, defaulted to MRI voxel size.")
+        logger.debug(f"Voxel sizes found: {voxel_sizes}")
 
 def assert_id_folder_consitency(folder_path: str, mouse_id: str) -> None:
     # Check if the folder path contains the mouse ID
