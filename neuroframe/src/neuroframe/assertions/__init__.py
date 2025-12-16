@@ -1,1 +1,2 @@
 from .array_assertions import assert_same_shape
+from .points_assertions import assert_points_transformed_properly
