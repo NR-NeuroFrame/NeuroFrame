@@ -160,3 +160,28 @@ def xy_fine_tune(mouse: Mouse, bregma_coords: np.array, deviation: int) -> tuple
         logger.debug(f"Points after rotation: {point}")
 
     return align_matrix, offset
+
+
+
+# ================================================================
+# 3. Section: Center Calculation Functions
+# ================================================================
+def compute_inner_center(binary_mask: np.ndarray, get_map: bool = False) -> np.ndarray:
+    """Compute the inner center of a binary mask using the Euclidean Distance Transform (EDT).
+
+    Parameters:
+        binary_mask (numpy.ndarray): A 3D binary mask where the object of interest is represented by non-zero values.
+
+    Returns:
+        numpy.ndarray: A 1D array containing the 3D coordinates of the inner center of the binary mask.
+    """
+    
+    # Compute the Euclidean Distance Transform (EDT)
+    distances = distance_transform_edt(binary_mask) 
+    
+    # Find the 3d coordinate of the maximum distance
+    max_index = np.argmax(distances)
+    center = np.unravel_index(max_index, binary_mask.shape)
+
+    if get_map: return np.array(center), distances
+    return np.array(center)
