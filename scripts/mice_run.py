@@ -9,21 +9,19 @@ from neuroframe import (
     extract_skull,
     get_bregma_lambda,
     layer_colapsing,
+    preprocess_reference_df
 )
 
 
 def main():
     print("Is working")
-    mouse = Mouse.from_folder(
-        "P874", "tests/integration/fixtures/test_experiment/test_mouse_p874"
-    )
-    segment_dataframe = pd.read_csv(
-        "tests/integration/fixtures/test_segmentation_info.csv"
-    )
+    mouse = Mouse.from_folder("P874", "tests/integration/fixtures/test_experiment/test_mouse_p874")
+    segment_dataframe = pd.read_csv("tests/integration/fixtures/test_segmentation_info.csv")
 
-    labels = layer_colapsing(mouse, segment_dataframe)
+    # Updates the segmentation data of the mice
+    layer_colapsing(mouse, segment_dataframe)
 
-    print(labels)
+    segment_dataframe = preprocess_reference_df(mouse, segment_dataframe)
 
     # mouse_run("P874", "tests/integration/fixtures/test_experiment/test_mouse_p874")
 

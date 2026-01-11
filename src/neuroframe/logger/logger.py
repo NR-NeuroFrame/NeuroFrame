@@ -14,7 +14,7 @@ from .filters import FunctionSeparatorFilter
 # ──────────────────────────────────────────────────────
 # 0.1 Subsection: Universal Constants
 # ──────────────────────────────────────────────────────
-LOG_PATH = Path("../logs")
+LOG_PATH = Path("logs/")
 LOG_PATH.mkdir(exist_ok=True)
 
 

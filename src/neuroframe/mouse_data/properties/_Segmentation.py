@@ -3,13 +3,11 @@
 # ================================================================
 import numpy as np
 
-from functools import cached_property
-
-
 
 class Properties:
     @property
-    def volume(self): return np.where(self.data > 0, 1, 0).astype(np.uint8)
+    def volume(self):
+        return np.where(self.data > 0, 1, 0).astype(np.uint8)
 
     @property
     def labels(self):

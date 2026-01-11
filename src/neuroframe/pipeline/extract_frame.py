@@ -22,21 +22,15 @@ from ..utils import separate_volume, compute_inner_center
 # ================================================================
 # 1. Section: Stereotaxic Coordinates Extraction
 # ================================================================
-def stereotaxic_coordinates(mouse: Mouse, reference_df: pd.DataFrame, ref_coords: tuple, mode: str = 'full_inner', 
+def stereotaxic_coordinates(mouse: Mouse, reference_df: pd.DataFrame, ref_coords: tuple, mode: str = 'full_inner',
                             is_parallelized: bool = True, verbose: int = 1, **kwargs) -> pd.DataFrame:
     folder = mouse.get_folder()
     updated_csv_path = kwargs.get('updated_csv_path', f'{folder}/NF_ef_{mode}_coords_fixed.csv')
     if(verbose >= 1): print("EF_StereotaxicCoordinates: Starting the stereotaxic coordinate extraction process!")
-    
+
     # Extracts the needed data
-    labels = mouse.get_segmentations().get_labels()
-    voxel_size = mouse.get_voxel_size()
-
-    # Updates the mice segmentations to remove any layers that have pairing (layer1,2,3,4,5)
-    labels = layer_colapsing(mouse, reference_df, verbose=verbose)
-
-    # Updates the reference DataFrame to remove any entries that do not correspond to the segmentations
-    reference_df = preprocess_reference_df(mouse, reference_df, verbose=verbose)
+    labels = mouse.segmentation.labels
+    voxel_size = mouse.voxel_size
 
     # Separates the brain
     hemispheres = separate_volume(mouse.get_segmentations().get_data())
@@ -50,274 +44,10 @@ def stereotaxic_coordinates(mouse: Mouse, reference_df: pd.DataFrame, ref_coords
     data = reference_df.merge(res_df, on='id', how='left')
 
     # Save the updated CSV file
-    
+
     data.to_csv(updated_csv_path, index=False)
 
     return data
-
-
-
-
-
-# ================================================================
-# 1. Section: Preparing Volume - Layer Collapsing
-# ================================================================
-def layer_colapsing(mouse: Mouse, data: pd.DataFrame, verbose: int) -> np.ndarray:
-    """
-    Collapse layers in the segmentation data of a mouse instance.
-    This function iterates through each row in the provided DataFrame and checks if the 'name'
-    column contains the substring "layer". It uses helper functions to initiate, continue, or
-    terminate layers based on the segmentation data. After processing all rows, it finalizes any
-    unfinished layers and updates the mouse segments accordingly. The resulting labels are then
-    returned as a NumPy array.
-
-    Parameters:
-        mice: Mice
-            An instance containing mouse segmentation data and associated methods.
-        data: pd.DataFrame
-            A DataFrame containing processed data with segmentation information; each row should
-            have at least 'id' and 'name' columns.
-        verbose: int
-            The verbosity level for printing debug information.
-    Returns:
-        np.ndarray
-            An array of updated labels corresponding to the mouse segments.
-    """
-    if(verbose >= 2): print("    🔄 Collapsing layers...")
-    segments = mouse.get_segmentations().get_data()
-    original_nr_segments = len(mouse.get_segmentations().get_labels())
-    layer_indexs = []
-
-    # Goes through every row in the processed data, if the name contains "Layer" it will store the index
-    for entry in range(len(data)):
-        if(verbose >= 5): print(f"                Checking segment {data['id'].iloc[entry]} - {data['name'].iloc[entry]}")
-        if(verbose >= 5): print(f"                Has layer? {'layer' in data['name'].iloc[entry].lower()}")
-
-        # Initiate, continue or terminate a layer if conditions are met
-        segments, layer_indexs = check_and_build_layer(segments, data, layer_indexs, entry, verbose=verbose)
-
-    # Finish any layer that could be left open
-    if(len(layer_indexs)> 0): segments, layer_indexs = terminate_layer(segments, data, layer_indexs, verbose=verbose)
-
-    # Updates the mice only if the segments have changed
-    labels = update_mouse_segments(mouse, segments, original_nr_segments, verbose)
-    
-    if(verbose >= 4): print(f"            Labels after collapsing: {labels}")
-    if(verbose >= 2): print(f"    ✅ Collapsed layers, now {len(labels)} segments in total.\n")
-    return labels
-
-
-
-# ──────────────────────────────────────────────────────
-# 1.1 Subsection: Preparing Volume - Helpers
-# ──────────────────────────────────────────────────────
-def check_and_build_layer(segments: np.ndarray, data: pd.DataFrame, layer_indexs: list, entry: int, verbose: int) -> tuple:
-    """
-    Check whether to start a new layer, continue an existing layer, or terminate the current layer.
-
-    This function examines the provided data and layer indices to determine if the current entry:
-    - Should start a new layer when the list of layer indices is empty and the 'name' field (from data) contains
-        the word "layer" (case insensitive).
-    - Should continue the current layer when the list is not empty and the 'parent_id' of the current entry matches
-        that of the first entry in layer_indexs.
-    - Should terminate the current layer when none of the above conditions hold and layer_indexs is not empty.
-        On termination, it updates the segments by calling the terminate_layer function and resets the layer index
-        by calling the initiate_new_layer function.
-
-    Parameters:
-            segments (np.ndarray): An array representing the current segments, which may be updated upon terminating a layer.
-            data (pd.DataFrame): A DataFrame containing entry data with fields such as 'name' and 'parent_id'.
-            layer_indexs (list): A list of indices representing entries associated with the currently active layer.
-            entry (int): The current index of the entry in the DataFrame to be processed.
-            verbose (int): Verbosity level for logging or debugging (passed along to other functions if required).
-
-    Returns:
-            tuple: A tuple consisting of the updated segments (np.ndarray) and the updated list of layer indices (list).
-    """
-    # Start if the layer_indexs is empty and the name contains "Layer"
-    is_start_layer = len(layer_indexs) == 0 and 'layer' in data['name'].iloc[entry].lower()
-    # Or if the layer_indexs is not empty and the parent_id of the current entry is the same as the parent_id of the first layer in the layer_indexs
-    is_continue_layer = len(layer_indexs) > 0 and data['parent_id'].iloc[entry] == data['parent_id'].iloc[layer_indexs[0]]
-    # Or if nothing checks, but layer index is not empty (finishing the layer)
-    is_terminate_layer = len(layer_indexs) > 0 and not (is_start_layer or is_continue_layer)
-
-    # Start a Layer or Continue a Layer
-    if(is_start_layer or is_continue_layer): layer_indexs.append(entry)
-
-    # Finish a Layer
-    elif(is_terminate_layer): 
-        # Update the segments (colpasing the layers)
-        segments = terminate_layer(segments, data, layer_indexs, verbose)
-        layer_indexs = initiate_new_layer(data, layer_indexs, entry, verbose)
-
-    return segments, layer_indexs
-    
-def terminate_layer(segments: np.ndarray, data: pd.DataFrame, layer_indexs: list, verbose: int) -> None:
-    """
-    Terminate the specified layer segments by updating their voxel values to the parent ID.
-    This function verifies that all layers specified by the indices in `layer_indexs`
-    share the same parent by calling `alert_layer_diff_parents`. It then retrieves the
-    parent ID from the first layer and uses it to replace the voxel values in the
-    `segments` array that correspond to each of the layer IDs at the given indices.
-    Verbose logging is provided based on the value of `verbose` to trace key steps.
-
-    Parameters:
-        segments (np.ndarray): Array of voxel values where specific layer IDs are
-            stored and updated.
-        data (pd.DataFrame): DataFrame containing layer information with columns such as
-            'id', 'parent_id', and 'name'.
-        layer_indexs (list): List of indices referring to rows in `data` that represent
-            the layers to be terminated.
-        verbose (int): Verbosity level; higher values result in more detailed logging.
-    Returns:
-        np.ndarray: The updated `segments` array with the layer voxel values replaced by
-        the parent ID.
-    Raises:
-        ValueError: This exception may be raised by `alert_layer_diff_parents` if the layers
-            in `layer_indexs` do not share the same parent.
-    """
-    if(verbose >= 4): print(f"            All layer names in layer_indexs: {[data['name'].iloc[i] for i in layer_indexs]}")
-    
-    # Check if every layer has the same parent_id
-    alert_layer_diff_parents(data, layer_indexs)
-
-    # Get the new voxel value for the colpased layer
-    parent_id = data['parent_id'].iloc[layer_indexs[0]].astype(int)
-
-    # remove evrything after the str layer in the layer name
-    layer_name = data['name'].iloc[layer_indexs[0]]
-    layer_name = layer_name.split('layer')[0].strip()
-
-    # Updates the layer voxel values to the parent_id
-    for index in layer_indexs: segments[segments == data['id'].iloc[index]] = parent_id
-
-    if(verbose >= 3): print(f'        🎵 Layer: {layer_name} - Parent: {parent_id}')
-    return segments
-
-def initiate_new_layer(data: pd.DataFrame, layer_indexs: list, entry: int, verbose: int) -> list:
-    """
-    Initiate a new layer based on a specified entry in the DataFrame.
-
-    This function clears the given layer index list and checks whether the
-    'name' column of the provided DataFrame at the specified entry contains the
-    substring "layer" (case insensitive). If it does, the entry is added to the
-    new layer index list.
-
-    Parameters:
-        data (pd.DataFrame): DataFrame that must contain a 'name' column.
-        layer_indexs (list): List intended for storing the indices of layers (will be reset).
-        entry (int): The index of the DataFrame row to check.
-
-    Returns:
-        list: A new list containing the entry if the condition is met; otherwise, an empty list.
-    """
-    layer_indexs = []
-
-    # In the case of the entry that activated the termination is part of another layer, it will start a new layer storage
-    if('layer' in data['name'].iloc[entry].lower()): 
-        if(verbose >= 4): print(f"            Initiating, right away, a new layer with entry {entry} - {data['name'].iloc[entry]}")
-        layer_indexs.append(entry)
-
-    return layer_indexs
-
-def update_mouse_segments(mouse: Mouse, segments: np.ndarray, original_nr_labels: int, verbose: int) -> np.ndarray:
-    """
-    Update the segmentation labels for a given Mice object based on the provided segments array.
-
-    This function compares the number of segments currently stored in the Mice object's segmentation
-    data with the number of unique segments found in the provided array (excluding the background
-    segment). If the number of segments has changed, it updates the segmentation data in the Mice
-    object. Otherwise, it logs that no collapsing of layers was performed.
-
-    Parameters:
-        mice (Mice): An instance of the Mice class that contains segmentation data.
-        segments (np.ndarray): A numpy array representing the segmentation data.
-                               It should include a background segment which is excluded from the count.
-        verbose (int): Level of verbosity for logging:
-                       - If verbose is greater than or equal to 3, detailed logging is output.
-
-    Returns:
-        np.ndarray: The updated array of segmentation labels after processing.
-    """
-    # Get the number of segments before and after the colapsing
-    new_nr_segments = len(np.unique(segments)) - 1  # Exclude background segment
-
-    # Only updates the segments if the number of segments has changed
-    if(original_nr_labels != new_nr_segments):
-        if(verbose >= 3): print("        📉 Reduced from ", original_nr_labels, "to", new_nr_segments, "segments")
-        mouse.get_segmentations().set_data(segments)
-    else: 
-        if(verbose >= 3): print("        ❌ No layers found to colapse.")
-
-    # Get the updated labels after colapsing (or no colapsing)
-    labels = mouse.get_segmentations().get_labels()
-    return labels
-
-# ››››››››››››››››››››››››››››››››››››››››››››››››
-# 1.1.1 Sub-subsection: Alerts and Warnings
-# ›››››››››››››››››››››››››››››››››››››››››››››››››
-def alert_layer_diff_parents(data: pd.DataFrame, layer_indexs: list) -> None:
-    """
-    Check if the layers specified by the indices in layer_indexs have different parent IDs.
-
-    This function examines the parent_id values from the provided DataFrame using the given
-    indices. If more than one unique parent_id is found, it issues a warning indicating that the
-    layers do not share the same parent_id, which may cause issues during the collapsing process.
-
-    Parameters:
-        data (pd.DataFrame): DataFrame containing layer data with a 'parent_id' column.
-        layer_indexs (list): List of indices corresponding to the layers to be checked.
-
-    Returns:
-        None
-
-    Raises:
-        Warning: A warning is issued if not all of the specified layers have the same parent_id.
-    """
-    parents_different = len(set(data['parent_id'].iloc[layer_indexs])) > 1
-    if(parents_different): warnings.warn("WARNING: Not all layers have the same parent_id, this may cause issues in the colapsing process.", stacklevel=2)
-
-
-
-
-
-# ================================================================
-# 2. Section: Preprocessing for Reference DataFrame
-# ================================================================
-def preprocess_reference_df(mouse: Mouse, reference_df: pd.DataFrame, verbose: int = 1) -> pd.DataFrame:
-    """
-    Remove every entry from the reference DataFrame that does not correspond
-    to any segmentation label defined in the provided mice instance.
-
-    Parameters:
-        mice (Mice): An instance of Mice used to retrieve segmentation labels.
-        reference_df (pd.DataFrame): A DataFrame containing reference entries with 'id' values.
-
-    Returns:
-        pd.DataFrame: A filtered DataFrame containing only entries with an 'id'
-        present in the mice segmentation labels.
-    """
-    if(verbose >= 2): print("    🔄 Preprocessing the reference DataFrame...")
-    labels = mouse.get_segmentations().get_labels()
-
-    # Remove every entry from the reference DataFrame that does not correspond to any segmentation label
-    reference_df = reference_df[reference_df['id'].isin(labels)]
-
-    # Print any entri that was present in the labels but not in the reference DataFrame
-    missing_labels = set(labels) - set(reference_df['id'])
-    if len(missing_labels) > 0:
-        print(f"        ❗ Missing labels in reference DataFrame: {missing_labels}")
-
-    # Remove the data from columns called reed, blue and green
-    if 'red' in reference_df.columns: reference_df = reference_df.drop(columns=['red'])
-    if 'blue' in reference_df.columns: reference_df = reference_df.drop(columns=['blue'])
-    if 'green' in reference_df.columns: reference_df = reference_df.drop(columns=['green'])
-
-    if(verbose >= 4): print(f"            20 Entries of Dataframe: {reference_df.head(20)}")
-    if(verbose >= 2): print(f"    ✅ Preprocessed reference DataFrame: {len(reference_df)} entries remaining.\n")
-    return reference_df
-
-
 
 
 
@@ -382,7 +112,7 @@ def non_parallelized_process(mouse: Mouse, hemispheres: np.ndarray, labels: np.n
         args_item = (segment, hemispheres, ref_coords, voxel_size, mode, verbose)
         result_dict: dict = center_coord_worker(args_item)
         results.append(result_dict)
-        
+
     if(verbose >= 2): print(f"    ✅ Processed {len(labels)} segments in {time.time() - start_time:.2f} s.\n")
     return results
 
@@ -397,7 +127,7 @@ def center_coord_worker(args: tuple) -> dict:
     Parameters:
         args (tuple): A tuple containing the following elements
             - segment: The identifier for the segment.
-            - hemispheres: A tuple of two numpy arrays corresponding to the left and 
+            - hemispheres: A tuple of two numpy arrays corresponding to the left and
               right hemisphere data.
             - ref_coords: Reference coordinates used in the center extraction process.
             - voxel_size: The size of the voxel used for scaling the coordinates.
@@ -410,11 +140,11 @@ def center_coord_worker(args: tuple) -> dict:
     """
     segment, hemispheres, ref_coords, voxel_size, mode, verbose = args
     if(verbose >= 5): print(f"                → Processing segment {segment}...")
-    
+
     # Create binary mask for each hemisphere of the segment
     left_hemisphere = np.where(hemispheres[0] == segment, 1, 0)
     right_hemisphere = np.where(hemispheres[1] == segment, 1, 0)
-    
+
     # Create a dictionary to store the results
     rec = {'id': segment}
 
@@ -422,14 +152,14 @@ def center_coord_worker(args: tuple) -> dict:
         # Compute the center of the segment. First check if it is separable, then compute the center accordingly
         rec = extract_coords((left_hemisphere, right_hemisphere), rec, ref_coords, voxel_size, mode, verbose)
     except Exception as e:
-        if(verbose >= 2): 
+        if(verbose >= 2):
             print(f"    🚨 Error processing segment {segment}: {e}")
             print(f"    🚨 Running segment with higher verbosity for debugging")
             try:
                 rec = extract_coords((left_hemisphere, right_hemisphere), rec, ref_coords, voxel_size, mode, verbose=10)
             except Exception as e:
                 print(f"    🚨 Error processing segment {segment} with high verbosity: {e}")
-         
+
     return rec
 
 
@@ -452,7 +182,7 @@ def extract_coords(hemispheres: tuple, rec: dict, ref_coords: np.ndarray, voxel_
     mean_um, std_um, ste_um = extract_statistics(ref_centroids, verbose=verbose)
 
     # Reorder from [z, y, x] to [x, y, z]
-    left_ref_centroid, right_ref_centroid, mean_um, std_um, ste_um = map(lambda coords: reorder_coords(coords, 3), [left_ref_centroid, 
+    left_ref_centroid, right_ref_centroid, mean_um, std_um, ste_um = map(lambda coords: reorder_coords(coords, 3), [left_ref_centroid,
                                                                                                                     right_ref_centroid, mean_um, std_um, ste_um])
     left_centroid, right_centroid = map(lambda coords: reorder_coords(coords, 0), [left_centroid, right_centroid])
 
@@ -487,17 +217,17 @@ def get_centroid(hemispheres: np.ndarray, mode: str, verbose: int):
     is_cut = (np.count_nonzero(volume[:, :, midline_x]) != 0)
 
     # Debugging output
-    if(verbose >= 7): 
+    if(verbose >= 7):
         print(f"                        ? Is the Hemisphere Empty? {not hemisphere_not_empty}")
         print(f"                        ? Is the Midline Cutting the Segments? {is_cut}")
         print(f"                        ? Inspecting separation: Left: {np.count_nonzero(left_hemisphere)} — Right: {np.count_nonzero(right_hemisphere)}")
 
     # Because the separation is clean, just use midline for trivial separation
-    if hemisphere_not_empty and not is_cut: 
+    if hemisphere_not_empty and not is_cut:
         if(verbose >= 8): print("                            😁 Trivial separated centroids")
         centroids, volumes_sizes = mode_centroid_calculation(hemispheres, mode)
         separation_method = 'Trivial'
-    
+
     # This handles the other cases (separable, non separable, and complex separations)
     else:
         if(verbose >= 8): print("                            😅 Separation was not trivial, complex approach needed")
@@ -526,7 +256,7 @@ def get_centroid_tip(hemispheres: np.ndarray, mode: str, verbose: int, tip: str)
     centroids, volumes_sizes = mode_centroid_calculation(hemispheres, mode)
 
     return centroids, volumes_sizes
-    
+
 
 def complex_separated_centroids(volume: np.ndarray, mode: str, verbose: int) -> tuple:
     # Assess if is true separable, if they are it rebuilds the hemispheres
@@ -561,10 +291,10 @@ def mode_centroid_calculation(hemispheres: tuple, mode: str) -> tuple:
     left_hemisphere, right_hemisphere = hemispheres
 
     # Compute the center of the left and right hemisphere according to the mode
-    if(mode == 'full_inner'): 
+    if(mode == 'full_inner'):
         left_centroid = compute_inner_center(left_hemisphere)
         right_centroid = compute_inner_center(right_hemisphere)
-    elif(mode == 'full_mean'): 
+    elif(mode == 'full_mean'):
         left_centroid = np.mean(np.argwhere(left_hemisphere), axis=0)
         right_centroid = np.mean(np.argwhere(right_hemisphere), axis=0)
 
@@ -590,25 +320,25 @@ def evaluate_cluster_separability(volume: np.ndarray, verbose: int):
         if(verbose >= 8): print(f"                            🤓 Only two features found and both with relevance → Complex but Separable")
         separation_method = 'Naive Separation'
         return rebuild_hemispheres(labeled_array, verbose), separation_method
-    
+
     relevant_features = extract_relevant_features_otsu(features)
     if(verbose >= 9): print(f"                                The relevant features (above threshold) are: {relevant_features}")
 
     # If there are two  or morerelevant sizes, it means the hemispheres are separable
     # This means we need to merge the non relevant pieces to the closest hemisphere
-    if(len(relevant_features) >= 2): 
+    if(len(relevant_features) >= 2):
         if(verbose >= 8): print(f"                            🤓 More than two relevant features found, rebuilding to the biggest 2 → Complex but Separable")
         separation_method = 'Naive Separation (Fragmented)'
         return rebuild_hemispheres(labeled_array, verbose), separation_method
-    
+
     if(verbose >= 8): print(f"                            😅 Naive Clustering was not enough to find separation. Trying Destroying Possible Bridges")
 
     labeled_array = try_destroying_bridges(volume, verbose)
 
-    if(len(np.unique(labeled_array)) > 2): 
+    if(len(np.unique(labeled_array)) > 2):
         separation_method = 'Opening Separation'
         return rebuild_hemispheres(labeled_array, verbose), separation_method
-    
+
     if(verbose >= 8): print(f"                            😅 Opening was not enough to find separation. Trying KMeans Clustering")
     labeled_array = try_clustering_hemispheres(volume, verbose)
 
@@ -644,16 +374,16 @@ def try_clustering_hemispheres(volume: np.ndarray, verbose:int, nr_centers: int 
     # Generates a set of initial starting points based on the lateralized means
     random_centers = generate_initial_centers(volume, nr_centers=nr_centers)
 
-    # Loop until the centers obtained follow the lateralized condition 
+    # Loop until the centers obtained follow the lateralized condition
     for centers in random_centers:
         # Perform kmeans
         cluster_centers, cluster_labels, is_centers_found = perform_kmeans(volume, centers)
 
-        if(is_centers_found): 
+        if(is_centers_found):
             if(verbose >= 8): print(f"                            🤓 KMeans clustering method found separation! → Most Complex but Separable")
             labeled_array = build_hemispheres_from_clustering(volume, cluster_labels)
             return labeled_array
-        
+
     # If no lateralized centers are found, return the original volume (it is not separable)
     return volume
 
@@ -661,19 +391,19 @@ def build_hemispheres_from_clustering(volume: np.ndarray, cluster_labels: np.nda
     """
     Build hemispheres from clustering by reassigning labels and reconstructing a volume.
 
-    This function takes a 3D volume and an array of clustering labels, reassigns the labels 
-    (switching -1 to 0 and 0 to 2), and then projects these labels back onto the original volume 
+    This function takes a 3D volume and an array of clustering labels, reassigns the labels
+    (switching -1 to 0 and 0 to 2), and then projects these labels back onto the original volume
     shape. Points in the volume that do not correspond to any clustering label are set to -1.
 
     Parameters:
-        volume (np.ndarray): A 3D NumPy array representing the input volume. Non-zero entries 
+        volume (np.ndarray): A 3D NumPy array representing the input volume. Non-zero entries
             indicate the points from which cluster labels are derived.
-        cluster_labels (np.ndarray): A 1D NumPy array containing cluster labels corresponding 
+        cluster_labels (np.ndarray): A 1D NumPy array containing cluster labels corresponding
             to the non-zero points in the volume.
 
     Returns:
-        np.ndarray: A reconstructed 3D NumPy array with the same shape as the input volume, where 
-            the labeled points have been updated according to the cluster label reassignment, and 
+        np.ndarray: A reconstructed 3D NumPy array with the same shape as the input volume, where
+            the labeled points have been updated according to the cluster label reassignment, and
             all other points are set to -1.
     """
     # Re assign values (-1 -> 0, 0->2)
@@ -732,7 +462,7 @@ def check_lateralization_condition(centers: np.ndarray) -> bool:
         2. The x-axis variation between the centers is at least half the sum of the y and z variations.
 
     Parameters:
-        centers (np.ndarray): A NumPy array containing exactly two center points. Each center point should be 
+        centers (np.ndarray): A NumPy array containing exactly two center points. Each center point should be
             an iterable with three numeric elements representing the x, y, and z coordinates respectively.
             The first element is interpreted as the left center and the second as the right center.
 
@@ -766,12 +496,12 @@ def generate_initial_centers(volume: np.ndarray, nr_centers: int = 20, range_val
             the algorithm starts with two centers and updates them iteratively with random offsets.
 
     Returns:
-        numpy.ndarray: An array containing the generated center points. Each center is represented 
+        numpy.ndarray: An array containing the generated center points. Each center is represented
         by its 3D coordinates.
     """
     # Get artificial center of segment
     mean_point = np.mean(np.argwhere(volume), axis=0)
-    
+
     # Create two starting points, one for the left and one for the right hemisphere (borders of the volume)
     start_left = np.array([mean_point[0], mean_point[1], 0])
     start_right = np.array([mean_point[0], mean_point[1], volume.shape[2]-1])
@@ -798,7 +528,7 @@ def try_destroying_bridges(volume: np.ndarray, verbose: int) -> np.ndarray:
     This function iteratively applies two different bridge-destruction techniques to the input
     volume: first using a Z-DIRECTED method and then a BALL method. For each method, it performs
     a loop with morphological opening until either the altered volume preserves less than 90% of
-    the original similar volume or the hemispheres become separable. If the hemispheres are 
+    the original similar volume or the hemispheres become separable. If the hemispheres are
     successfully separated by either method, the function returns the resulting labeled array.
     If both techniques fail to achieve separation, the original volume is returned, potentially
     to be processed by a clustering algorithm later.
@@ -812,16 +542,16 @@ def try_destroying_bridges(volume: np.ndarray, verbose: int) -> np.ndarray:
     """
     # Loop until either less than 90% of similar volume is kept or the hemispheres are separable (Z-DIRECTED VERSION)
     found_separation, labeled_array = loop_opening(volume, method='z_directed', verbose=verbose)
-    if(found_separation): 
+    if(found_separation):
         if(verbose >= 8): print(f"                            🤓 Erosion with Z-DIRECTED method found separation! → Much Complex but Separable")
         return labeled_array
 
     # Loop until either less than 90% of similar volume is kept or the hemispheres are separable (BALL VERSION)
     found_separation, labeled_array = loop_opening(volume, method='ball', verbose=verbose)
-    if(found_separation): 
+    if(found_separation):
         if(verbose >= 8): print(f"                            🤓 Erosion with BALL method found separation! → Much Complex but Separable")
         return labeled_array
-        
+
     # If everything fails, return the volume as it is (need for clustering method)
     return volume
 
@@ -857,10 +587,10 @@ def loop_opening(volume, method: str, verbose: int) -> None:
     while similarity_value >= similarity_threshold and opening_size <= 20 and not found_separation:
         eroded_volume, labeled_array, relevant_features = perform_morphological_opening(volume, opening_size, method)
         similarity_value = compute_volume_similarity(volume, eroded_volume)
-        
+
         if(len(relevant_features) > 1): found_separation = True
         else: opening_size += 1
-    
+
     return found_separation, labeled_array
 
 def initiate_eroded_volume(volume: np.ndarray) -> tuple:
@@ -934,10 +664,10 @@ def perform_morphological_opening(volume: np.ndarray, opening_size: int, method:
     # Perform labeling
     labeled_array, num_features = label(eroded_volume, structure=None)
     labeled_array, features = reorder_labels_array(labeled_array)
-    
+
     # Extract only the relevant features based on Otsu's threshold
     relevant_features = extract_relevant_features_otsu(features)
-    
+
     return eroded_volume, labeled_array, relevant_features
 
 def reorder_labels_array(labeled_array: np.ndarray) -> tuple:
@@ -981,12 +711,12 @@ def compute_volume_similarity(original_volume: np.ndarray, comparing_volume: np.
     """
     Compute the similarity between two binary volumes.
 
-    This function compares two binary numpy arrays (volumes), where each volume is expected 
-    to contain only 0s and 1s. It computes the similarity percentage by first ensuring 
-    that both volumes are proper binary masks. The comparing volume is preprocessed by 
-    inverting its background (0 values replaced with 100) so that background values differ 
-    from foreground values (1). The similarity mask is generated by comparing the original 
-    volume against this preprocessed comparing volume, and the percentage similarity is 
+    This function compares two binary numpy arrays (volumes), where each volume is expected
+    to contain only 0s and 1s. It computes the similarity percentage by first ensuring
+    that both volumes are proper binary masks. The comparing volume is preprocessed by
+    inverting its background (0 values replaced with 100) so that background values differ
+    from foreground values (1). The similarity mask is generated by comparing the original
+    volume against this preprocessed comparing volume, and the percentage similarity is
     calculated based on the number of matching foreground elements.
 
     Parameters:
@@ -994,7 +724,7 @@ def compute_volume_similarity(original_volume: np.ndarray, comparing_volume: np.
         comparing_volume (np.ndarray): A binary numpy array representing the volume to compare.
 
     Returns:
-        float: The similarity percentage between the original and comparing volumes, rounded 
+        float: The similarity percentage between the original and comparing volumes, rounded
         to two decimal places.
 
     Raises:
@@ -1112,7 +842,7 @@ def convert_to_ref(old_coords: np.ndarray, reference: np.ndarray, voxel_size: fl
     # Check if the convertion made sense
     alert_inconsistent_convertion(old_coords, new_coords, mode='voxel')
 
-    if(verbose >= 7): 
+    if(verbose >= 7):
         print(f"                        → Centroid Voxel Coordinates: {old_coords}")
         print(f"                        → Bregma-Lambda Coordinates: {reference}")
         print(f"                        → Centroid Voxel Coordinates in BL Space (No XY Invertion): {new_coords}")
@@ -1161,7 +891,7 @@ def alert_non_negative_z(old_coords: np.ndarray, new_coords: np.ndarray, referen
     is_z_not_negative = np.any(new_coords[:, 0] > 0)
 
     # Warn if they are met
-    if is_z_not_negative: 
+    if is_z_not_negative:
         warnings.warn(f'WARNING: Some Z values are not negative')
         warnings.warn(f'Voxel Centroid Coords (Before Any Change) - {old_coords}')
         warnings.warn(f'Begma-lambda Coords - {reference}')
@@ -1172,7 +902,7 @@ def alert_not_isotropic_voxel(voxel_size: np.ndarray):
     is_isotropic = (voxel_size[0] == voxel_size[1]) and (voxel_size[0] == voxel_size[2])
 
     # Warn if they are met
-    if(not is_isotropic): 
+    if(not is_isotropic):
         warnings.warn("WARNING: Voxel size is not isotropic, this may cause issues in the conversion to um coordinates.")
 
 
@@ -1182,12 +912,12 @@ def alert_not_isotropic_voxel(voxel_size: np.ndarray):
 # ──────────────────────────────────────────────────────
 def extract_statistics(ref_centroids: np.array, verbose: int) -> tuple:
     """
-    Computes statistical measures (mean, standard deviation, and standard error) 
+    Computes statistical measures (mean, standard deviation, and standard error)
     for a pair of reference centroids in micrometer (um) coordinates.
 
     Parameters:
-        ref_centroids (np.array): A 2D numpy array containing two centroids 
-                                  (left and right) as rows, where each centroid 
+        ref_centroids (np.array): A 2D numpy array containing two centroids
+                                  (left and right) as rows, where each centroid
                                   is represented by a 3D coordinate (x, y, z).
 
     Returns:

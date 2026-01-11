@@ -48,7 +48,7 @@ def check_and_build_layer(segments: np.ndarray, data: pd.DataFrame, layer_indexs
     if(is_start_layer or is_continue_layer): layer_indexs.append(entry)
 
     # Finish a Layer
-    elif(is_terminate_layer): 
+    elif(is_terminate_layer):
         # Update the segments (colpasing the layers)
         segments = terminate_layer(segments, data, layer_indexs)
         layer_indexs = initiate_new_layer(data, layer_indexs, entry)
@@ -57,7 +57,7 @@ def check_and_build_layer(segments: np.ndarray, data: pd.DataFrame, layer_indexs
 
 def terminate_layer(segments: np.ndarray, data: pd.DataFrame, layer_indexs: list) -> None:
     logger.debug(f"All layer names in layer_indexs: {[data['name'].iloc[i] for i in layer_indexs]}")
-    
+
     # Check if every layer has the same parent_id
     assert_all_from_same_parent(data, layer_indexs)
 
@@ -80,7 +80,7 @@ def update_mouse_segments(mouse: Mouse, segments: np.ndarray, original_nr_labels
 
     # Only updates the segments if the number of segments has changed
     if(original_nr_labels != new_nr_segments):
-        logger.info("Reduced from ", original_nr_labels, "to", new_nr_segments, "segments")
+        logger.info(f"Reduced from {original_nr_labels} to {new_nr_segments} segments")
         mouse.segmentation.data = segments
     else: logger.info("No layers found to colapse.")
 
@@ -93,8 +93,8 @@ def initiate_new_layer(data: pd.DataFrame, layer_indexs: list, entry: int) -> li
     layer_indexs = []
 
     # In the case of the entry that activated the termination is part of another layer, it will start a new layer storage
-    if('layer' in data['name'].iloc[entry].lower()): 
-        logger.debug(f"            Initiating, right away, a new layer with entry {entry} - {data['name'].iloc[entry]}")
+    if('layer' in data['name'].iloc[entry].lower()):
+        logger.debug(f"Initiating, right away, a new layer with entry {entry} - {data['name'].iloc[entry]}")
         layer_indexs.append(entry)
 
     return layer_indexs
