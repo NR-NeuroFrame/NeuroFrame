@@ -1,7 +1,12 @@
 # ================================================================
 # 0. Section: Imports
 # ================================================================
-from ._assertions import *
+from ._assertions import(
+    assert_folder_consitency,
+    assert_shape_consitency,
+    assert_voxel_size_consitency,
+    assert_id_folder_consitency
+)
 
 
 
@@ -17,14 +22,14 @@ class Properties:
         # Return the mice ID folder path
         folder = self.mri.folder
         return folder
-    
+
     @property
-    def data_shape(self) -> tuple[int, int, int]: 
+    def data_shape(self) -> tuple[int, int, int]:
         # Warns if the shapes do not match (designed to do every call)
         assert_shape_consitency([self.micro_ct.shape, self.mri.shape, self.segmentation.shape])
 
         return self.mri.shape
-    
+
     @property
     def voxel_size(self) -> tuple[float, float, float]:
         # Warns if the voxel sizes do not match (designed to do every call)

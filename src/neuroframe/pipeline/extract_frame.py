@@ -22,30 +22,38 @@ from ..utils import separate_volume, compute_inner_center
 # ================================================================
 # 1. Section: Stereotaxic Coordinates Extraction
 # ================================================================
-def stereotaxic_coordinates(mouse: Mouse, reference_df: pd.DataFrame, ref_coords: tuple, mode: str = 'full_inner',
-                            is_parallelized: bool = True, verbose: int = 1, **kwargs) -> pd.DataFrame:
-    folder = mouse.get_folder()
-    updated_csv_path = kwargs.get('updated_csv_path', f'{folder}/NF_ef_{mode}_coords_fixed.csv')
-    if(verbose >= 1): print("EF_StereotaxicCoordinates: Starting the stereotaxic coordinate extraction process!")
+def stereotaxic_coordinates(
+    mouse: Mouse,
+    reference_df: pd.DataFrame,
+    ref_coords: tuple,
+    group_folder: str | None = None,
+    is_parallelized: bool = True,
+    file_name: str = "stereotaxic_coordinates",
+    mode: str = "full_mean"
+) -> pd.DataFrame:
 
-    # Extracts the needed data
+    # 1. Extracts the needed data
     labels = mouse.segmentation.labels
     voxel_size = mouse.voxel_size
+    folder = mouse.folder
 
-    # Separates the brain
-    hemispheres = separate_volume(mouse.get_segmentations().get_data())
+    # Get the path where the data will be stored
+    if(group_folder is None): results_path = f'{folder}/{file_name}.csv'
+    else: results_path = f"{group_folder}/{mouse.id.lower()}_{file_name}.csv"
+
+    # TODO: Remove this separation
+    hemispheres = separate_volume(mouse.segmentation.data)
 
     # Calculates the coordinates of the segments in bregma-lambda space (parallelized or not)
-    if(is_parallelized): results = parallelized_process(hemispheres, labels, ref_coords, voxel_size, mode, verbose=verbose)
-    else: results = non_parallelized_process(mouse, hemispheres, labels, ref_coords, voxel_size, mode, verbose=verbose)
+    if(is_parallelized): results = parallelized_process(hemispheres, labels, ref_coords, voxel_size, mode, verbose=0)
+    else: results = non_parallelized_process(mouse, hemispheres, labels, ref_coords, voxel_size, mode, verbose=0)
 
     # Create a DataFrame from the list of result dictionaries and merge the results into your original DataFrame
     res_df = pd.DataFrame(results)
     data = reference_df.merge(res_df, on='id', how='left')
 
     # Save the updated CSV file
-
-    data.to_csv(updated_csv_path, index=False)
+    data.to_csv(results_path, index=False)
 
     return data
 

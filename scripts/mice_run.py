@@ -9,25 +9,25 @@ from neuroframe import (
     extract_skull,
     get_bregma_lambda,
     layer_colapsing,
-    preprocess_reference_df
+    preprocess_reference_df,
+    stereotaxic_coordinates
 )
+from neuroframe.utils import get_folders
+
 
 
 def main():
-    print("Is working")
-    mouse = Mouse.from_folder("P874", "tests/integration/fixtures/test_experiment/test_mouse_p874")
-    segment_dataframe = pd.read_csv("tests/integration/fixtures/test_segmentation_info.csv")
+    mouse_ids = get_folders("data")
+    segment_df = pd.read_csv("data/annotations_info.csv")
 
-    # Updates the segmentation data of the mice
-    layer_colapsing(mouse, segment_dataframe)
-
-    segment_dataframe = preprocess_reference_df(mouse, segment_dataframe)
-
-    # mouse_run("P874", "tests/integration/fixtures/test_experiment/test_mouse_p874")
+    for mouse_id in mouse_ids:
+        print(f"Starting mouse {mouse_id}")
+        mouse_run(mouse_id, "data", segment_df)
 
 
-def mouse_run(mouse_id: str, folder_path: str) -> None:
+def mouse_run(mouse_id: str, group_folder_path: str, segment_df: pd.DataFrame) -> None:
     # Initialize the Brains
+    folder_path = f"{group_folder_path}/{mouse_id}"
     mouse = Mouse.from_folder(mouse_id, folder_path)
     adapt_template(mouse, ALLEN_TEMPLATE)
 
@@ -36,6 +36,16 @@ def mouse_run(mouse_id: str, folder_path: str) -> None:
     skull = extract_skull(mouse)
     bregma, lambda_ = get_bregma_lambda(mouse, skull)
     new_bregma, new_lambda = align_to_bl(mouse, bregma, lambda_, deviation=40)
+    layer_colapsing(mouse, segment_df)
+    segment_df = preprocess_reference_df(mouse, segment_df)
+    stereotaxic_coordinates(
+        mouse = mouse,
+        reference_df = segment_df,
+        ref_coords=(new_bregma, new_lambda),
+        group_folder=group_folder_path,
+        file_name="stereotaxic_coordinates_MEAN",
+        mode="full_mean"
+    )
 
 
 if __name__ == "__main__":

@@ -214,3 +214,4 @@ logs/
 
 *.nii
 pyrightconfig.json
+data/
