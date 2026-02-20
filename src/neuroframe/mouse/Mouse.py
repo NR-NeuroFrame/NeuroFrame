@@ -3,11 +3,20 @@
 # ================================================================
 import os
 
-from ..mouse_data import MicroCT, MRI, Segmentation
+from ..mouse_data import (
+    MicroCT,
+    MRI,
+    Segmentation,
+    Hemisphere,
+    SegmentationEDT,
+    SegmentationNEDT,
+    FieldBL
+)
 from ._dunders import Dunders
 from ._properties import Properties
 from ._plots import Plots
 from ._assertions import assert_required_files, assert_no_extra_files
+from ._utils import get_attribute, get_path_key
 
 
 
@@ -15,7 +24,17 @@ from ._assertions import assert_required_files, assert_no_extra_files
 # 1. Section: Mouse Classes
 # ================================================================
 class Mouse(Dunders, Properties, Plots):
-    def __init__(self, id: str, mri_path: str, ct_path: str, segmentations_path: str) -> None:
+    def __init__(
+        self,
+        id: str,
+        mri_path: str,
+        ct_path: str,
+        segmentations_path: str,
+        hemisphere_path: str | None = None,
+        segmentation_edt_path: str | None = None,
+        segmentation_nedt_path: str | None = None,
+        field_bl_path: str | None = None
+    ) -> None:
         self.micro_ct = MicroCT(ct_path)
         self.mri = MRI(mri_path)
         self.segmentation = Segmentation(segmentations_path)
@@ -25,6 +44,12 @@ class Mouse(Dunders, Properties, Plots):
             'mri_path': mri_path,
             'segmentations_path': segmentations_path
         }
+
+        # Only adds these if defined
+        self._add_not_none(hemisphere_path, Hemisphere)
+        self._add_not_none(segmentation_edt_path, SegmentationEDT)
+        self._add_not_none(segmentation_nedt_path, SegmentationNEDT)
+        self._add_not_none(field_bl_path, FieldBL)
 
         self.id = id
 
@@ -47,3 +72,16 @@ class Mouse(Dunders, Properties, Plots):
             elif target == '_seg': segmentations_path = file_path
 
         return cls(id, mri_path, ct_path, segmentations_path)
+
+
+
+    # ================================================================
+    # 2. Section: Helper Class Functions
+    # ================================================================
+    def _add_not_none(self, path: str | None, cls) -> None:
+        attribute = get_attribute(cls)
+        path_key = get_path_key(cls)
+
+        if(path is not None):
+            setattr(self, attribute, cls(path))
+            self.paths[path_key] = path

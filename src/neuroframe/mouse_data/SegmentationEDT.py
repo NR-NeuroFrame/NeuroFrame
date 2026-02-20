@@ -1,16 +1,17 @@
 # ================================================================
-# 0. Section: Imports
+# 0. Section: IMPORTS
 # ================================================================
 from .MedicalImage import MedicalImage
 
-from .dunders._Segmentation import Dunders
-from .properties._Segmentation import Properties
+from .dunders._SegmentationEDT import Dunders
+from .properties._SegmentationEDT import Properties
 
 
 
 # ================================================================
-# 1. Section: Segmentation Class
+# 1. Section: Hemishpere Class
 # ================================================================
-class Segmentation(Dunders, Properties, MedicalImage):
+class SegmentationEDT(Dunders, Properties, MedicalImage):
+    """Not normalized"""
     def __init__(self, path):
         super().__init__(path)

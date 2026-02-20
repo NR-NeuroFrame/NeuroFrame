@@ -1,16 +1,17 @@
 # ================================================================
-# 0. Section: Imports
+# 0. Section: IMPORTS
 # ================================================================
 from .MedicalImage import MedicalImage
 
-from .dunders._Segmentation import Dunders
-from .properties._Segmentation import Properties
+from .dunders._FieldBL import Dunders
+from .properties._FieldBL import Properties
 
 
 
 # ================================================================
-# 1. Section: Segmentation Class
+# 1. Section: Hemishpere Class
 # ================================================================
-class Segmentation(Dunders, Properties, MedicalImage):
+class FieldBL(Dunders, Properties, MedicalImage):
+    """Stores a 3D Vector at each voxel"""
     def __init__(self, path):
         super().__init__(path)
