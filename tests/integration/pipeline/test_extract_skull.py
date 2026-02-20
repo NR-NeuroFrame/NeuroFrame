@@ -2,9 +2,14 @@
 # 0. Section: Imports
 # ================================================================
 import unittest
+import numpy as np
 
-from src.neuroframe.pipeline.extract_skull import *
-from src.neuroframe.mouse_data import MicroCT
+from neuroframe.pipeline.skull.extract_skull import (
+    cumsum_projection,
+    mean_projection,
+    view_projection
+)
+from neuroframe.mouse_data import MicroCT
 
 
 

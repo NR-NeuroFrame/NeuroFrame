@@ -1,24 +1,19 @@
 # ================================================================
 # 0. Section: Imports
 # ================================================================
-import cv2
-
 import numpy as np
 import SimpleITK as sitk
 
 from ...utils import get_z_coord
 from ...logger import logger
-from ...registrator import Registrator, SUTURE_REGISTRATOR, convert_input, apply_shape
+from ...registrator import (
+    Registrator,
+    SUTURE_REGISTRATOR,
+    convert_input,
+    apply_shape
+)
 from ...mouse import Mouse
-
-
-# ──────────────────────────────────────────────────────
-# 0.1 Subsection: Universal Constants
-# ──────────────────────────────────────────────────────
-SUTURE_TEMPLATE = cv2.imread("src/neuroframe/templates/suture_template_t14.png", cv2.IMREAD_GRAYSCALE)
-BREGMA_TEMPLATE = convert_input(cv2.imread("src/neuroframe/templates/bregma_template_t14.png", cv2.IMREAD_GRAYSCALE))
-LAMBDA_TEMPLATE = convert_input(cv2.imread("src/neuroframe/templates/lambda_template_t14.png", cv2.IMREAD_GRAYSCALE))
-REF_TEMPLATES = (BREGMA_TEMPLATE, LAMBDA_TEMPLATE)
+from ...templates import REF_TEMPLATES, SUTURE_TEMPLATE
 
 
 

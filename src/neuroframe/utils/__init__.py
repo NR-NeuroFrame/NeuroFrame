@@ -24,7 +24,8 @@ from .geometry_utils import (
 )
 from .save_utils import (
     save_object,
-    load_object
+    load_object,
+    TEMP_FOLDER
 )
 from .io_utils import get_folders
 
@@ -46,5 +47,6 @@ __all__ = [
     "xy_fine_tune",
     "save_object",
     "load_object",
+    "TEMP_FOLDER",
     "get_folders"
 ]

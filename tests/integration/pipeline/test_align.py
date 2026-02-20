@@ -2,9 +2,12 @@
 # 0. Section: Imports
 # ================================================================
 import unittest
+import numpy as np
 
-from src.neuroframe.pipeline.align import *
-from src.neuroframe.utils.save_utils import *
+from neuroframe import Mouse
+from neuroframe.templates import ALLEN_TEMPLATE
+from neuroframe.pipeline.align_brain import align_to_allen, adapt_template
+from neuroframe.utils import save_object, TEMP_FOLDER
 
 
 

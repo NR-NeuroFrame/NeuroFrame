@@ -5,7 +5,7 @@ import unittest
 import os
 import shutil
 
-from src.neuroframe.utils.save_utils import *
+from neuroframe.utils.save_utils import TEMP_FOLDER
 
 
 
@@ -45,5 +45,3 @@ class Test99End(unittest.TestCase):
 
         self.assertTrue(os.path.exists(TEMP_FOLDER), "Temporary folder should exist for test outputs")
         self.assertEqual(len(os.listdir(TEMP_FOLDER)), 0, "Temporary folder should be empty at the end of tests")
-
-
