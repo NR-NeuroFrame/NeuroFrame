@@ -1,3 +1,7 @@
+# ================================================================
+# 0. Section: IMPORTS
+# ================================================================
+from pathlib import Path
 from src.neuroframe import (
     ALLEN_TEMPLATE,
     Mouse,
@@ -6,37 +10,30 @@ from src.neuroframe import (
     align_to_bl,
     extract_skull,
     get_bregma_lambda,
-    plot_alignment,
-    plot_bl,
-    plot_mouse_template_overlay,
-    plot_skull,
 )
 
 
-def main():
-    mouse = Mouse.from_folder(
-        "P874", "tests/integration/fixtures/test_experiment/test_mouse_p874"
-    )
 
-    template_vol = adapt_template(mouse, ALLEN_TEMPLATE)
+# ================================================================
+# 1. Section: INPUTS
+# ================================================================
+MOUSE_FODLER: Path = Path("tests/integration/fixtures/test_experiment/test_mouse_p874")
+MOUSE_ID: str = "P874"
+SEGMENT_INFO_PATH: Path = Path("data/annotations_info.csv")
+TYPE_OF_COORDS: str = "auto"
+TYPE_OF_CENTER: str = "inner"
+
+
+
+# ================================================================
+# 2. Section: MAIN
+# ================================================================
+if __name__ == '__main__':
+    mouse = Mouse.from_folder(MOUSE_ID, MOUSE_FODLER)
+
+    adapt_template(mouse, ALLEN_TEMPLATE)
     align_to_allen(mouse)
-
-    plot_mouse_template_overlay(template_vol, mouse.segmentation.volume)
-
     skull = extract_skull(mouse)
-
-    plot_skull(skull)
-
     bregma, lambda_ = get_bregma_lambda(mouse, skull)
-
-    plot_bl(skull, bregma, lambda_)
-
     new_bregma, new_lambda = align_to_bl(mouse, bregma, lambda_, deviation=40)
-
-    plot_alignment(mouse)
-
     # dataframe_coords = nf.stereotaxic_coordinates(mice_p324, reference_df, (bregma_coords, lambda_coords), is_parallelized=True, verbose=2, mode='full_inner')
-
-
-if __name__ == "__main__":
-    main()
