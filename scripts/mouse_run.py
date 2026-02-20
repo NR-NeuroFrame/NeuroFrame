@@ -2,9 +2,9 @@
 # 0. Section: IMPORTS
 # ================================================================
 from pathlib import Path
-from src.neuroframe import (
-    ALLEN_TEMPLATE,
-    Mouse,
+from src.neuroframe import Mouse
+from src.neuroframe.templates import ALLEN_TEMPLATE
+from src.neuroframe.pipeline import (
     adapt_template,
     align_to_allen,
     align_to_bl,

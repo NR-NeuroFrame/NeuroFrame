@@ -4,9 +4,10 @@
 import pandas as pd
 
 from pathlib import Path
-from neuroframe import (
-    ALLEN_TEMPLATE,
-    Mouse,
+from neuroframe import Mouse
+from neuroframe.templates import ALLEN_TEMPLATE
+from neuroframe.utils import get_folders
+from neuroframe.pipeline import (
     adapt_template,
     align_to_allen,
     align_to_bl,
@@ -16,7 +17,6 @@ from neuroframe import (
     preprocess_reference_df,
     stereotaxic_coordinates
 )
-from neuroframe.utils import get_folders
 
 
 
