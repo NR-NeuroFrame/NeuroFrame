@@ -4,7 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..styling import NR_BLUE, NR_RED
+from ...styling import NR_BLUE, NR_RED
 
 
 
@@ -61,7 +61,7 @@ def plot_bl(skull_surface: np.array, bregma_coords: np.array, lambda_coords: np.
     >>> # plot_bl(skull_img, bregma, lambd)
 
     """
-    
+
     plt.figure(figsize=(8,8))
     plt.imshow(skull_surface, cmap="gray")
     plt.scatter(bregma_coords[2], bregma_coords[1], c=NR_RED, marker='x', s=15, label=f"Bregma (z={bregma_coords[0]})")

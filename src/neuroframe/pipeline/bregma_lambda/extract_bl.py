@@ -6,10 +6,10 @@ import cv2
 import numpy as np
 import SimpleITK as sitk
 
-from ..utils import get_z_coord
-from ..logger import logger
-from ..registrator import Registrator, SUTURE_REGISTRATOR, convert_input, apply_shape
-from ..mouse import Mouse
+from ...utils import get_z_coord
+from ...logger import logger
+from ...registrator import Registrator, SUTURE_REGISTRATOR, convert_input, apply_shape
+from ...mouse import Mouse
 
 
 # ──────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ REF_TEMPLATES = (BREGMA_TEMPLATE, LAMBDA_TEMPLATE)
 # ================================================================
 def get_bregma_lambda(mouse: Mouse, skull_surface: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Computes the 3D coordinates of bregma and lambda on a mouse skull.
-    
+
     This function identifies the bregma and lambda landmarks by applying a
     template matching approach. It first computes a deformation map from the
     provided skull surface. Then, it aligns reference templates for bregma and
@@ -35,7 +35,7 @@ def get_bregma_lambda(mouse: Mouse, skull_surface: np.ndarray) -> tuple[np.ndarr
     aligned templates and the deformation map, it finds the 2D (y, x) coordinates
     of the landmarks on the skull surface. Finally, it determines the corresponding
     z-coordinate from the micro-CT data to produce the full 3D coordinates.
-    
+
     Parameters
     ----------
     mouse : Mouse
@@ -92,7 +92,7 @@ def get_bregma_lambda(mouse: Mouse, skull_surface: np.ndarray) -> tuple[np.ndarr
     >>> # bregma_coords = (110, 250, 260)
     >>> # lambda_coords = (105, 400, 255)
     """
-    
+
     transform = extract_deformation_map(skull_surface)
 
     # Unpacks the templates
@@ -104,7 +104,7 @@ def get_bregma_lambda(mouse: Mouse, skull_surface: np.ndarray) -> tuple[np.ndarr
     # Get the bregma and lambda coordinates (x, y)
     bregma_coords = np.round(get_reference_point(bregma_template, skull_surface, transform)).astype(int)
     lambda_coords = np.round(get_reference_point(lambda_template, skull_surface, transform)).astype(int)
-    
+
     # Get the z coordinates
     bregma_z = get_z_coord(mouse.micro_ct.data, bregma_coords)
     lambda_z = get_z_coord(mouse.micro_ct.data, lambda_coords)
@@ -129,7 +129,7 @@ def get_bregma_lambda(mouse: Mouse, skull_surface: np.ndarray) -> tuple[np.ndarr
 # ──────────────────────────────────────────────────────
 # 1.1 Subsection: Deformation Map Extraction
 # ──────────────────────────────────────────────────────
-def extract_deformation_map(skull_surface: np.ndarray, sutures_registration: Registrator = SUTURE_REGISTRATOR) -> sitk.Transform:    
+def extract_deformation_map(skull_surface: np.ndarray, sutures_registration: Registrator = SUTURE_REGISTRATOR) -> sitk.Transform:
     # Bspline registration to the suture template
     _, sutures_transform = sutures_registration.register(skull_surface, SUTURE_TEMPLATE)
 
@@ -150,7 +150,7 @@ def get_reference_point(reference_template: np.ndarray | sitk.Image, skull_surfa
     # Get the coordinates of the reference points
     points = np.argwhere(deformed_template > 0)
     reference_coords = np.mean(points, axis=0)
-    
+
     return reference_coords
 
 

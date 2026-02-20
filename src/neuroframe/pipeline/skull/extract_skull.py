@@ -5,8 +5,8 @@ import numpy as np
 
 from scipy.ndimage import gaussian_filter
 
-from ..mouse import Mouse
-from ..logger import logger
+from ...mouse import Mouse
+from ...logger import logger
 
 
 
@@ -85,7 +85,7 @@ def extract_skull(mouse: Mouse, method:str = 'cumsum') -> np.ndarray | tuple[np.
     >>> print(projection_map.shape)
     (100, 100)
     """
-    
+
     # Extracts the data from the mice object
     micro_ct = mouse.micro_ct.data
     depth_map = None
@@ -94,7 +94,7 @@ def extract_skull(mouse: Mouse, method:str = 'cumsum') -> np.ndarray | tuple[np.
     if method == 'mean': projection_map = mean_projection(micro_ct)
     elif method == 'view': projection_map, depth_map = view_projection(micro_ct)
     elif method == 'cumsum': projection_map = cumsum_projection(micro_ct, [30, 20, 4000])
-    else: 
+    else:
         logger.warning("Invalid method. Choose 'mean' , 'view' or 'cumsum'. Will default to 'cumsum'.")
         projection_map = cumsum_projection(micro_ct, [30, 20, 4000])
 
@@ -128,7 +128,7 @@ def cumsum_projection(micro_ct: np.ndarray, parameters: tuple, lower_bound: None
     img_depth = np.sum(background, axis = 0).astype(float)
     gauss_depth = gaussian_filter(img_depth, depth_sigma).astype(int)
 
-    # Extract surface of the skull by sampling along the z-axis using the gaussian smoothed depth image 
+    # Extract surface of the skull by sampling along the z-axis using the gaussian smoothed depth image
     # (we want the gaussian to vary smootly along the x and y axis -> adjust sigma for that)
     try:
         width, height = micro_ct.shape[1:3]
@@ -143,13 +143,13 @@ def cumsum_projection(micro_ct: np.ndarray, parameters: tuple, lower_bound: None
     skull_surface = np.where(skull_surface < 52, 0, skull_surface)
 
     return skull_surface
-    
+
 
 # ──────────────────────────────────────────────────────
 # 1.2 Subsection: Mean Projection Method
 # ──────────────────────────────────────────────────────
 # BUG: For some reason it plots empty array, even though the array seems
-# to be populated, since we don't use this method, for now is ok 
+# to be populated, since we don't use this method, for now is ok
 def mean_projection(micro_ct: np.ndarray) -> np.ndarray:
     z_len = micro_ct.shape[0]
     lower_bound = 3*int(z_len//4)
