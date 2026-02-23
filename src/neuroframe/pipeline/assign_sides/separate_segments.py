@@ -35,10 +35,8 @@ def separate_segments(mouse: Mouse) -> np.ndarray:
     lateralized_volume = np.zeros_like(segmentations)
     for seg_lab in tqdm(segments_labels[:10], desc="Separating segments", unit="seg"):
         # 1. Extracts left vs right segments
-        print(f"Segment: {seg_lab}")
         seg_vol = np.where(segmentations == seg_lab, 1, 0)
         lateralized_segment = separate_single_segment(seg_vol)
-        print(f"Method used: {lateralized_segment.separation_method}\n")
 
         # 2. Assigns side labels
         lateralized_segment.left *= LEFT_TAG
@@ -47,10 +45,6 @@ def separate_segments(mouse: Mouse) -> np.ndarray:
         # 3. Stores it
         segment = lateralized_segment.left + lateralized_segment.right
         lateralized_volume += segment
-
-        plt.figure()
-        plt.imshow(segment[segment.shape[0]//2,:,:])
-        plt.show()
 
     # 3. Makes sure there are no overlaps
     validate_lateralization(lateralized_volume)
