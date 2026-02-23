@@ -9,7 +9,8 @@ from ...mouse import Mouse
 from .separation_methods import (
     trivial_separation,
     naive_grouping_separation,
-    fragmented_grouping_separation
+    fragmented_grouping_separation,
+    destroying_bridges_separation
 )
 
 
@@ -44,3 +45,9 @@ def separate_single_segment(volume: np.ndarray) -> tuple:
     if(is_groupable): return fragmented_grouping
 
     # 4. Let's see if we can break bridges to get separable fragments
+    unbridged_z, is_separated_z = destroying_bridges_separation(volume, "z_directed")
+    if(is_separated_z): return unbridged_z
+
+    # 4. Let's see if we can break bridges to get separable fragments
+    unbridged_ball, is_separated_ball = destroying_bridges_separation(volume, "ball")
+    if(is_separated_ball): return unbridged_ball
