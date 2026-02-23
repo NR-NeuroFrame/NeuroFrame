@@ -1,12 +1,15 @@
 # ================================================================
 # 0. Section: Imports
 # ================================================================
+import numpy as np
+from ..logger import logger
 from ._assertions import(
     assert_folder_consitency,
     assert_shape_consitency,
     assert_voxel_size_consitency,
     assert_id_folder_consitency
 )
+from ..mouse_data import Hemisphere
 
 
 
@@ -43,6 +46,9 @@ class Properties:
     @property
     def paths(self) -> dict[str, str]: return self._paths
 
+    @property
+    def hemishpere(self) -> Hemisphere | None: return self._hemishpere
+
 
 
     # ================================================================
@@ -61,3 +67,9 @@ class Properties:
         assert_folder_consitency(value)
 
         self._paths = value
+
+    @hemishpere.setter
+    def hemisphere(self, value: np.ndarray) -> None:
+        if(self.paths["hemisphere_path"] is None):
+            logger.warning("The path should also be defined for hemispheres as good practice")
+        self._hemishpere = value

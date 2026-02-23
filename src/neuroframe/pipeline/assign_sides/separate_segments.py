@@ -6,6 +6,7 @@ import numpy as np
 from tqdm import tqdm
 
 from ...mouse import Mouse
+from .validate import validate_lateralization
 from .separation_methods import (
     LateralizedSegment,
     trivial_separation,
@@ -16,20 +17,39 @@ from .separation_methods import (
     failed_separation
 )
 
+LEFT_TAG: int = 1
+RIGHT_TAG: int = 2
+
 
 
 # ================================================================
 # 1. Section: Functions
 # ================================================================
 def separate_segments(mouse: Mouse):
+    # 1. Extracts the data
     segments_labels = mouse.segmentation.labels
     segmentations = mouse.segmentation.data
 
+    # 2. Loops over eveyr different segment
+    lateralized_volume = np.zeros_like(segmentations)
     for seg_lab in tqdm(segments_labels, desc="Separating segments", unit="seg"):
+        # 1. Extracts left vs right segments
         seg_vol = np.where(segmentations == seg_lab, 1, 0)
-
         left, right = separate_single_segment(seg_vol)
 
+        # 2. Assigns side labels
+        left *= LEFT_TAG
+        right *= RIGHT_TAG
+
+        # 3. Stores it
+        lateralized_volume += left
+        lateralized_volume += right
+
+    # 3. Makes sure there are no overlaps
+    validate_lateralization(lateralized_volume)
+
+    # 4. Save the channel near the data
+    mouse.hemishpere = lateralized_volume
 
 # ──────────────────────────────────────────────────────
 # 1.1 Subsection: Apply for one segment
