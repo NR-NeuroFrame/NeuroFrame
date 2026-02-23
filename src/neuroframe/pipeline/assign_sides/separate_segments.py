@@ -1,0 +1,46 @@
+# ================================================================
+# 0. Section: IMPORTS
+# ================================================================
+import numpy as np
+
+from tqdm import tqdm
+
+from ...mouse import Mouse
+from .separation_methods import (
+    trivial_separation,
+    naive_grouping_separation,
+    fragmented_grouping_separation
+)
+
+
+
+# ================================================================
+# 1. Section: Functions
+# ================================================================
+def separate_segments(mouse: Mouse):
+    segments_labels = mouse.segmentation.labels
+    segmentations = mouse.segmentation.data
+
+    for seg_lab in tqdm(segments_labels, desc="Separating segments", unit="seg"):
+        seg_vol = np.where(segmentations == seg_lab, 1, 0)
+
+        left, right = separate_single_segment(seg_vol)
+
+
+# ──────────────────────────────────────────────────────
+# 1.1 Subsection: Apply for one segment
+# ──────────────────────────────────────────────────────
+def separate_single_segment(volume: np.ndarray) -> tuple:
+    # 1. Try trivial separation first
+    trivial_sides, is_trivial = trivial_separation(volume)
+    if(is_trivial): return trivial_sides
+
+    # 2. In case it fails it does naive separation (checks for connected clusters)
+    naive_grouping, is_naive_groupable, cluster_data = naive_grouping_separation(volume)
+    if(is_naive_groupable): return naive_grouping
+
+    # 3. If naive grouping does not work, let's try to add the fragments to the main clusters
+    fragmented_grouping, is_groupable = fragmented_grouping_separation(cluster_data)
+    if(is_groupable): return fragmented_grouping
+
+    # 4. Let's see if we can break bridges to get separable fragments
