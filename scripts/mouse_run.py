@@ -46,7 +46,8 @@ if __name__ == '__main__':
     _ = layer_colapsing(mouse, segmentation_info)
     segmentation_info = preprocess_reference_df(mouse, segmentation_info)
 
-    # 3. Get the helper channels
+    # 3. Get the left-right separations
+
 
 
     # dataframe_coords = nf.stereotaxic_coordinates(mice_p324, reference_df, (bregma_coords, lambda_coords), is_parallelized=True, verbose=2, mode='full_inner')
