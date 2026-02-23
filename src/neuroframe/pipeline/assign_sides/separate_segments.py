@@ -7,11 +7,13 @@ from tqdm import tqdm
 
 from ...mouse import Mouse
 from .separation_methods import (
+    LateralizedSegment,
     trivial_separation,
     naive_grouping_separation,
     fragmented_grouping_separation,
     destroying_bridges_separation,
-    clustering_separation
+    clustering_separation,
+    failed_separation
 )
 
 
@@ -32,32 +34,33 @@ def separate_segments(mouse: Mouse):
 # ──────────────────────────────────────────────────────
 # 1.1 Subsection: Apply for one segment
 # ──────────────────────────────────────────────────────
-def separate_single_segment(volume: np.ndarray) -> tuple:
+def separate_single_segment(volume: np.ndarray) -> LateralizedSegment:
     # 0. Makes sure any segment with 1 or 0 voxel does not go through all of it
-    # TODO
+    if(np.count_nonzero(volume) == 1): return failed_separation(volume)
 
     # 1. Try trivial separation first
-    trivial_sides, is_trivial = trivial_separation(volume)
-    if(is_trivial): return trivial_sides
+    trivial_output = trivial_separation(volume)
+    if(trivial_output.condition): return trivial_output.lateralized_segment
 
     # 2. In case it fails it does naive separation (checks for connected clusters)
-    naive_grouping, is_naive_groupable, cluster_data = naive_grouping_separation(volume)
-    if(is_naive_groupable): return naive_grouping
+    naive_ouput = naive_grouping_separation(volume)
+    if(naive_ouput.condition): return naive_ouput.lateralized_segment
 
     # 3. If naive grouping does not work, let's try to add the fragments to the main clusters
-    fragmented_grouping, is_groupable = fragmented_grouping_separation(cluster_data)
-    if(is_groupable): return fragmented_grouping
+    fragment_output = fragmented_grouping_separation(naive_ouput.cluster_data)
+    if(fragment_output.condition): return fragment_output.lateralized_segment
 
     # 4. Let's see if we can break bridges to get separable fragments (directional eroded)
-    unbridged_z, is_separated_z = destroying_bridges_separation(volume, "z_directed")
-    if(is_separated_z): return unbridged_z
+    z_erode_output = destroying_bridges_separation(volume, "z_directed")
+    if(z_erode_output.condition): return z_erode_output.lateralized_segment
 
     # 5. Let's see if we can break bridges to get separable fragments (ball eroded)
-    unbridged_ball, is_separated_ball = destroying_bridges_separation(volume, "ball")
-    if(is_separated_ball): return unbridged_ball
+    ball_erode_output = destroying_bridges_separation(volume, "ball")
+    if(ball_erode_output.condition): return ball_erode_output.lateralized_segment
 
     # 6. Try Kmeans clustering as last resort
-    clustered, is_center_found = clustering_separation(volume)
-    if(is_center_found): return clustered
+    clustering_output = clustering_separation(volume)
+    if(clustering_output.condition): return clustering_output.lateralized_segment
 
     # 7. If all fails, it will be assigned to the closest
+    return failed_separation(volume)

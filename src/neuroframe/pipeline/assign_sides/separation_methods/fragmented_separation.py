@@ -3,6 +3,7 @@
 # ================================================================
 import numpy as np
 
+from .dataclasses import LateralizedSegment, MethodOutput
 from .grouping import (
     get_relevant_clusters_otsu,
     assign_side,
@@ -14,7 +15,7 @@ from .grouping import (
 # ================================================================
 # 1. Section: Functions
 # ================================================================
-def fragmented_grouping_separation(cluster_data: ClusterData) -> tuple:
+def fragmented_grouping_separation(cluster_data: ClusterData) -> MethodOutput:
     # 1. Extract the data
     labeled_array = cluster_data.labeled_array
     cluster_sizes = cluster_data.sizes
@@ -31,7 +32,12 @@ def fragmented_grouping_separation(cluster_data: ClusterData) -> tuple:
     left = np.where(left > 0, 1, 0)
     right = np.where(right > 0, 1, 0)
 
-    return (left, right), has_enough_relevant_clusters
+    # 5. Builds the methods update
+    output = MethodOutput(
+        lateralized_segment=LateralizedSegment(left, right, "Naive Separation (Fragmented)"),
+        condition=has_enough_relevant_clusters
+    )
+    return output
 
 
 # ──────────────────────────────────────────────────────

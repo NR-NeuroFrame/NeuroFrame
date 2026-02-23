@@ -4,13 +4,14 @@
 import numpy as np
 
 from ...utils import separate_volume
+from .dataclasses import LateralizedSegment, MethodOutput
 
 
 
 # ================================================================
 # 1. Section: Functions
 # ================================================================
-def trivial_separation(volume: np.ndarray) -> tuple[tuple, bool]:
+def trivial_separation(volume: np.ndarray) -> MethodOutput:
     left, right = separate_volume(volume)
     midline_x = volume.shape[2] // 2
 
@@ -22,4 +23,10 @@ def trivial_separation(volume: np.ndarray) -> tuple[tuple, bool]:
 
     # 4. If the separation is clean, just use midline for trivial separation
     is_trivial = hemisphere_not_empty and not is_cut
-    return (left, right), is_trivial
+
+    # 5. Method ouput construction
+    output = MethodOutput(
+        lateralized_segment=LateralizedSegment(left, right, "Trivial"),
+        condition=is_trivial
+    )
+    return output
