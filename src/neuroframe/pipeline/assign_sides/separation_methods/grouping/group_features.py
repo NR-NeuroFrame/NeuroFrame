@@ -29,7 +29,7 @@ def assign_side(labeled_array: np.ndarray, get_center: bool = False) -> tuple:
     first_center = np.mean(np.argwhere(first_side), axis=0)
     second_center = np.mean(np.argwhere(second_side), axis=0)
 
-    if first_center[2] > second_center[2]:
+    if first_center[2] < second_center[2]:
         left = first_side
         left_center = first_center
         right = second_side

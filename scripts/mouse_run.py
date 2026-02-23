@@ -13,7 +13,8 @@ from neuroframe.pipeline import (
     extract_skull,
     get_bregma_lambda,
     layer_colapsing,
-    preprocess_reference_df
+    preprocess_reference_df,
+    separate_segments
 )
 
 
@@ -33,9 +34,12 @@ TYPE_OF_CENTER: str = "inner"
 # 2. Section: MAIN
 # ================================================================
 if __name__ == '__main__':
+    print("Starting")
     # 1. Import the data
     mouse = Mouse.from_folder(MOUSE_ID, MOUSE_FODLER)
     segmentation_info = pd.read_csv(SEGMENT_INFO_PATH)
+
+    print(mouse.paths)
 
     # 2. Apply pipeline
     adapt_template(mouse, ALLEN_TEMPLATE)
@@ -47,7 +51,8 @@ if __name__ == '__main__':
     segmentation_info = preprocess_reference_df(mouse, segmentation_info)
 
     # 3. Get the left-right separations
-
+    print("Start Lateralization")
+    lateralization = separate_segments(mouse)
 
 
     # dataframe_coords = nf.stereotaxic_coordinates(mice_p324, reference_df, (bregma_coords, lambda_coords), is_parallelized=True, verbose=2, mode='full_inner')

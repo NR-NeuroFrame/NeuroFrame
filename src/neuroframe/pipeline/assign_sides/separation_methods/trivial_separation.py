@@ -3,7 +3,7 @@
 # ================================================================
 import numpy as np
 
-from ...utils import separate_volume
+from ....utils import separate_volume
 from .dataclasses import LateralizedSegment, MethodOutput
 
 

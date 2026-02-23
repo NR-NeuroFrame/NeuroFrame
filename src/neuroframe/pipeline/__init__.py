@@ -16,6 +16,7 @@ from .bregma_lambda import (
 
 from .process_reference import preprocess_reference_df
 from .layer_colapse import layer_colapsing
+from .assign_sides import separate_segments
 #from .extract_frame import stereotaxic_coordinates
 
 
@@ -31,5 +32,6 @@ __all__ = [
     "plot_bl",
     "layer_colapsing",
     "preprocess_reference_df",
+    "separate_segments"
     #"stereotaxic_coordinates"
 ]

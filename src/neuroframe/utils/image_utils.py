@@ -98,7 +98,7 @@ def compute_separation(volume: np.ndarray) -> float:
 
     left_per = np.sum(left_hemisphere > 0) / np.sum(volume > 0)
     right_per = np.sum(right_hemisphere > 0) / np.sum(volume > 0)
-    
+
     #print(f"Difference: {abs(left_per - right_per):.2%}")
     return round(abs(left_per - right_per) * 100, 2)
 
@@ -114,8 +114,8 @@ def separate_volume(volume: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     right_hemisphere = volume.copy()
 
     # Set the left hemisphere to zero where the right hemisphere is non-zero
-    left_hemisphere[:, :, :volume.shape[2] // 2] = 0
-    right_hemisphere[:, :, volume.shape[2] // 2:] = 0
+    left_hemisphere[:, :, volume.shape[2] // 2:] = 0
+    right_hemisphere[:, :, :volume.shape[2] // 2] = 0
 
     hemispheres = (left_hemisphere, right_hemisphere)
     return hemispheres

@@ -42,7 +42,7 @@ class Mouse(Dunders, Properties, Plots):
         self.paths = {
             'ct_path': ct_path,
             'mri_path': mri_path,
-            'segmentations_path': segmentations_path
+            'segmentations_path': segmentations_path,
         }
 
         # Only adds these if defined
@@ -84,4 +84,4 @@ class Mouse(Dunders, Properties, Plots):
 
         if(path is not None):
             setattr(self, attribute, cls(path))
-            self.paths[path_key] = path
+        self.paths[path_key] = path

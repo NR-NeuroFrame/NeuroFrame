@@ -16,5 +16,5 @@ def failed_separation(volume: np.ndarray) -> LateralizedSegment:
     midline_x = volume.shape[2] // 2
 
     # 2. Assigns the volume to the closest and the other as None
-    if(center[2] > midline_x): return LateralizedSegment(volume, None, "Failed")
-    else: return LateralizedSegment(None, volume, "Failed")
+    if(center[2] > midline_x): return LateralizedSegment(None, volume, "Failed")
+    else: return LateralizedSegment(volume, None, "Failed")

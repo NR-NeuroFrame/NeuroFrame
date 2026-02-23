@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 
 from .LateralizedSegment import LateralizedSegment
-from .grouping import ClusterData
+from ..grouping import ClusterData
 
 
 
