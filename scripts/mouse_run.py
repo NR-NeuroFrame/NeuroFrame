@@ -23,7 +23,8 @@ from neuroframe.pipeline import (
 # 1. Section: INPUTS
 # ================================================================
 MOUSE_ID: str = "P874"
-MOUSE_FODLER: Path = Path("tests/integration/fixtures/test_experiment/test_mouse_p874")
+#MOUSE_FODLER: Path = Path("tests/integration/fixtures/test_experiment/test_mouse_p874")
+MOUSE_FODLER: Path = Path("../data/P324")
 SEGMENT_INFO_PATH: Path = Path("data/annotations_info.csv")
 TYPE_OF_COORDS: str = "auto"
 TYPE_OF_CENTER: str = "inner"

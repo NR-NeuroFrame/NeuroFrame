@@ -2,12 +2,12 @@
 # 0. Section: IMPORTS
 # ================================================================
 import numpy as np
-from matplotlib import pyplot as plt
 
 from tqdm import tqdm
 
 from ...mouse import Mouse
 from .validate import validate_lateralization
+from ...save import save_channel
 from .separation_methods import (
     LateralizedSegment,
     trivial_separation,
@@ -33,7 +33,7 @@ def separate_segments(mouse: Mouse) -> np.ndarray:
 
     # 2. Loops over eveyr different segment
     lateralized_volume = np.zeros_like(segmentations)
-    for seg_lab in tqdm(segments_labels[:10], desc="Separating segments", unit="seg"):
+    for seg_lab in tqdm(segments_labels, desc="Separating segments", unit="seg"):
         # 1. Extracts left vs right segments
         seg_vol = np.where(segmentations == seg_lab, 1, 0)
         lateralized_segment = separate_single_segment(seg_vol)
@@ -50,7 +50,8 @@ def separate_segments(mouse: Mouse) -> np.ndarray:
     validate_lateralization(lateralized_volume)
 
     # 4. Save the channel near the data
-    mouse.hemisphere = lateralized_volume
+    hemisphere_path = save_channel(mouse, lateralized_volume, "hemisphere")
+    print(f"Saved in {hemisphere_path}")
 
     # 5. Also save lateralization description
 

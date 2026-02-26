@@ -6,7 +6,6 @@ import os
 import nibabel as nib
 import numpy as np
 
-from functools import singledispatch
 from .image_utils import normalize
 
 
@@ -29,7 +28,7 @@ def _compress_nifty_folder(input_path: str, output_path: str, data_compression: 
 def _compress_nifty_file(input_path: str, output_path: str, data_compression: bool = False) -> None:
     img = nib.load(input_path)
 
-    # Compress the values inside after normalizing to int8 
+    # Compress the values inside after normalizing to int8
     if data_compression: img = compress_data(img)
 
     # Save the NIfTI file with gzip compression
