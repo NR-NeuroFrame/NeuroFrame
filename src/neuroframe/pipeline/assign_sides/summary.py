@@ -19,8 +19,8 @@ def build_lateralization_summary(lat_array: np.ndarray):
         summary.loc[len(summary)] = [
             lateralization.id,
             lateralization.separation_method,
-            lateralization.left_ratio,
-            lateralization. right_ratio
+            np.round(lateralization.left_ratio * 100, 2),
+            np.round(lateralization.right_ratio * 100, 2)
         ]
 
     return summary
