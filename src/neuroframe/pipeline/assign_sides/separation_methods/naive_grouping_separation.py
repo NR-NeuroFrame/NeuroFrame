@@ -19,11 +19,15 @@ def naive_grouping_separation(volume: np.ndarray) -> MethodOutput:
     cluster_data = get_grouping(volume)
     cluster_sizes = cluster_data.sizes
 
-    # 2. Assign them with respect to left and right
-    left, right = assign_side(cluster_data.labeled_array)
-
-    # 3. Assess if the clusteres are real clusters or just noise
+    # 2. Assess if the clusteres are real clusters or just noise
     has_two_direct_features = (cluster_data.num_features == 2 and cluster_sizes[1]/cluster_sizes[0]*100 > 50)
+
+    # 3. Assign them with respect to left and right
+    if has_two_direct_features:
+        left, right = assign_side(cluster_data.labeled_array)
+    else:
+        left = volume.copy()
+        right = volume.copy()
 
     # 4. Builds the methods output
     output = MethodOutput(

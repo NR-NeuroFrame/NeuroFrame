@@ -11,7 +11,8 @@ from .similarity import get_volume_similarity
 from ..grouping import (
     get_relevant_clusters_otsu,
     get_grouping,
-    assign_side
+    assign_side,
+    ClusterData
 )
 
 SIMILARITY_THRESHOLD: int = 90
@@ -24,7 +25,12 @@ SIMILARITY_THRESHOLD: int = 90
 def destroying_bridges_separation(volume: np.ndarray, method: str) -> MethodOutput:
     # 1. Tryies multiple erosion (progressive intensity) to make sure we remove bridge
     has_found_separation, cluster_data = loop_opening(volume, method)
-    left, right = assign_side(cluster_data.labeled_array)
+
+    if has_found_separation:
+        left, right = assign_side(cluster_data.labeled_array)
+    else:
+        left = volume.copy()
+        right = volume.copy()
 
     # 2. Builds the method output
     output = MethodOutput(
@@ -71,7 +77,7 @@ def perform_morphological_opening(volume: np.ndarray, opening_size: int, method:
     # 2. Perform morphological opening
     eroded_volume = opening(volume, selem)
     if(np.count_nonzero(eroded_volume) == 0):
-        return eroded_volume, eroded_volume, np.array([])
+        return eroded_volume, ClusterData.empty(volume.shape)
 
     # 3. Perform grouping (label)
     eroded_clusters_data = get_grouping(eroded_volume)

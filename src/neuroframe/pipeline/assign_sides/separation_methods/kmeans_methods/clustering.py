@@ -24,7 +24,11 @@ def clustering_separation(volume: np.ndarray, nr_centers: int = 30) -> MethodOut
     labeled_array, is_center_found = try_kmeans_on_centers(volume, random_centers)
 
     # 3. Assigns sides, even if did not work
-    left, right = assign_side(labeled_array)
+    if is_center_found:
+        left, right = assign_side(labeled_array)
+    else:
+        left = volume.copy()
+        right = volume.copy()
 
     # 4. Builds the method ouput
     output = MethodOutput(
@@ -45,4 +49,4 @@ def try_kmeans_on_centers(volume: np.ndarray, random_centers: np.ndarray) -> tup
         if(is_centers_found):
             labeled_array = build_hemispheres_from_clustering(volume, cluster_labels)
             return labeled_array, is_centers_found
-    return labeled_array, is_centers_found
+    return volume, is_centers_found

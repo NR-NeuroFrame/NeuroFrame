@@ -11,6 +11,9 @@ from skimage.filters import threshold_otsu
 # 1. Section: Relevant Clustering
 # ================================================================
 def get_relevant_clusters_otsu(features: np.ndarray) -> np.ndarray:
+    # 0. If the indput is empty so should be the output
+    if(len(features) == 0): return features
+
     # 1. Gets the threshold and returns the clusters above it
     thr = threshold_otsu(features)
     relevant_features = np.where(features > thr)[0]
@@ -42,3 +45,17 @@ def assign_side(labeled_array: np.ndarray, get_center: bool = False) -> tuple:
 
     if(get_center): return (left, right), (left_center, right_center)
     return left, right
+
+def check_lateralization_condition(centers: np.ndarray) -> bool:
+    left_center, right_center = centers
+
+    # It canot change sides
+    if(left_center[2] > right_center[2]): return False
+
+    # The x variation needs to be bigger than the y and z variations (combined)
+    x_variation = abs(left_center[2] - right_center[2])
+    y_variation = abs(left_center[1] - right_center[1])
+    z_variation = abs(left_center[0] - right_center[0])
+    if(x_variation > (y_variation + z_variation) * 0.5): return True
+
+    return False

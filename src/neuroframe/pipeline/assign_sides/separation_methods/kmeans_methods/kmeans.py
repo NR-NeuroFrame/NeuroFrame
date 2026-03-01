@@ -4,6 +4,7 @@
 import numpy as np
 
 from sklearn.cluster import KMeans
+from ..grouping import check_lateralization_condition
 
 
 
@@ -31,16 +32,3 @@ def perform_kmeans(volume: np.ndarray, centers: np.ndarray | list) -> tuple:
 # ──────────────────────────────────────────────────────
 # 1.1 Subsection: Check if was successeful
 # ──────────────────────────────────────────────────────
-def check_lateralization_condition(centers: np.ndarray) -> bool:
-    left_center, right_center = centers
-
-    # It canot change sides
-    if(left_center[2] > right_center[2]): return False
-
-    # The x variation needs to be bigger than the y and z variations (combined)
-    x_variation = abs(left_center[2] - right_center[2])
-    y_variation = abs(left_center[1] - right_center[1])
-    z_variation = abs(left_center[0] - right_center[0])
-    if(x_variation > (y_variation + z_variation) * 0.5): return True
-
-    return False

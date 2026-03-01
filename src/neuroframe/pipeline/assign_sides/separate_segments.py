@@ -1,13 +1,20 @@
 # ================================================================
 # 0. Section: IMPORTS
 # ================================================================
+import warnings
+
 import numpy as np
 
 from tqdm import tqdm
 
 from ...mouse import Mouse
 from .validate import validate_lateralization
-from ...save import save_channel
+from .summary import build_lateralization_summary
+from ...save import (
+    save_channel,
+    save_summary
+)
+from .SummaryLateralization import SummaryLateralization
 from .separation_methods import (
     LateralizedSegment,
     trivial_separation,
@@ -23,6 +30,12 @@ RIGHT_TAG: int = 2
 
 
 
+
+warnings.filterwarnings("error", message="Mean of empty slice.*", category=RuntimeWarning)
+np.seterr(invalid="raise", divide="raise")
+
+
+
 # ================================================================
 # 1. Section: Functions
 # ================================================================
@@ -33,6 +46,7 @@ def separate_segments(mouse: Mouse) -> np.ndarray:
 
     # 2. Loops over eveyr different segment
     lateralized_volume = np.zeros_like(segmentations)
+    summary_array = []
     for seg_lab in tqdm(segments_labels, desc="Separating segments", unit="seg"):
         # 1. Extracts left vs right segments
         seg_vol = np.where(segmentations == seg_lab, 1, 0)
@@ -46,15 +60,28 @@ def separate_segments(mouse: Mouse) -> np.ndarray:
         segment = lateralized_segment.left + lateralized_segment.right
         lateralized_volume += segment
 
+        # 4. Prepares for summary
+        summary_array.append(
+            SummaryLateralization(
+                id=seg_lab,
+                separation_method=lateralized_segment.separation_method,
+                left_ratio=lateralized_segment.left_ratio,
+                right_ratio=lateralized_segment.right_ratio,
+            )
+        )
+    summary_array = np.array(summary_array)
+
     # 3. Makes sure there are no overlaps
     validate_lateralization(lateralized_volume)
 
     # 4. Save the channel near the data
     hemisphere_path = save_channel(mouse, lateralized_volume, "hemisphere")
-    print(f"Saved in {hemisphere_path}")
 
     # 5. Also save lateralization description
+    summary_df = build_lateralization_summary(summary_array)
+    info_path = save_summary(mouse, summary_df, "hemisphere")
 
+    print(f" Channel saved at {hemisphere_path} wiht info saved at {info_path}")
     return lateralized_volume
 
 # ──────────────────────────────────────────────────────

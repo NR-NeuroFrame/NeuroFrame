@@ -14,3 +14,7 @@ class ClusterData:
     labeled_array: np.ndarray
     sizes: np.ndarray
     num_features: int
+
+    @classmethod
+    def empty(cls, shape: tuple | np.ndarray) -> 'ClusterData':
+        return ClusterData(np.zeros(shape), np.array([]), 0)

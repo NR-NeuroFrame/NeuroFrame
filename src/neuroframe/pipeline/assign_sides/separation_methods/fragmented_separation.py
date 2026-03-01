@@ -7,7 +7,8 @@ from .dataclasses import LateralizedSegment, MethodOutput
 from .grouping import (
     get_relevant_clusters_otsu,
     assign_side,
-    ClusterData
+    ClusterData,
+    check_lateralization_condition
 )
 
 
@@ -19,7 +20,6 @@ def fragmented_grouping_separation(cluster_data: ClusterData) -> MethodOutput:
     # 1. Extract the data
     labeled_array = cluster_data.labeled_array
     cluster_sizes = cluster_data.sizes
-    left, right = assign_side(labeled_array)
 
     # 2. Checks if we should do fragmentation
     relevant_clusters = get_relevant_clusters_otsu(cluster_sizes)
@@ -27,15 +27,23 @@ def fragmented_grouping_separation(cluster_data: ClusterData) -> MethodOutput:
 
     # 3. Merge Fragments if should (after the two biggest)
     if(has_enough_relevant_clusters): left, right = merge_fragments(labeled_array)
+    else:
+        left = labeled_array.copy()
+        right = labeled_array.copy()
 
     # 4. Makes sure it is still a mask
     left = np.where(left > 0, 1, 0)
     right = np.where(right > 0, 1, 0)
 
+    # 5. Makes sure the ratios of left and right are ok
+    left_center = np.mean(np.argwhere(left), axis=0)
+    right_center = np.mean(np.argwhere(right), axis=0)
+    is_lateral = check_lateralization_condition((left_center, right_center))
+
     # 5. Builds the methods update
     output = MethodOutput(
         lateralized_segment=LateralizedSegment(left, right, "Naive Separation (Fragmented)"),
-        condition=has_enough_relevant_clusters
+        condition=has_enough_relevant_clusters and is_lateral
     )
     return output
 
