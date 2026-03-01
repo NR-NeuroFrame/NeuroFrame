@@ -47,9 +47,9 @@ def quaternion_from_vectors(v: np.ndarray, t: np.ndarray) -> np.ndarray:
     # Normalize the vectors
     v = v / np.linalg.norm(v)
     t = t / np.linalg.norm(t)
-    
+
     dot = np.dot(v, t)
-    
+
     # Handle the case when vectors are opposite
     if np.isclose(dot, -1.0):
         # Find an arbitrary perpendicular vector
@@ -61,13 +61,13 @@ def quaternion_from_vectors(v: np.ndarray, t: np.ndarray) -> np.ndarray:
         # Quaternion representing 180 degree rotation about the chosen axis
         q = np.concatenate((axis * np.sin(np.pi / 2), [np.cos(np.pi / 2)]))
         return q
-    
+
     # Calculate quaternion components
     s = np.sqrt((1.0 + dot) * 2.0)
     invs = 1.0 / s
     cross = np.cross(v, t)
     q = np.array([cross[0] * invs, cross[1] * invs, cross[2] * invs, s * 0.5])
-    
+
     # Normalize the quaternion for safety
     q /= np.linalg.norm(q)
     return q
@@ -107,20 +107,20 @@ def fit_plane(points: np.ndarray) -> tuple[np.ndarray, float, np.ndarray]:
 
     # Compute the centroid of the points
     centroid = np.mean(points, axis=0)
-    
+
     # Center the points by subtracting the centroid
     centered_points = points - centroid
-    
+
     # Perform SVD on the centered points
     U, S, Vt = np.linalg.svd(centered_points)
-    
+
     # The normal of the plane is the last singular vector (smallest singular value)
     normal = Vt[-1]
-    
+
     # Compute D using the plane equation: n . (x - centroid) = 0 => n . x + D = 0,
     # thus D = -n . centroid
     D = -np.dot(normal, centroid)
-    
+
     return normal, D, centroid
 
 def get_helper_points(mouse: Mouse, ref_coords: np.array, deviation: int) -> tuple[np.array, np.array]:
@@ -167,18 +167,9 @@ def xy_fine_tune(mouse: Mouse, bregma_coords: np.array, deviation: int) -> tuple
 # 3. Section: Center Calculation Functions
 # ================================================================
 def compute_inner_center(binary_mask: np.ndarray, get_map: bool = False) -> np.ndarray:
-    """Compute the inner center of a binary mask using the Euclidean Distance Transform (EDT).
-
-    Parameters:
-        binary_mask (numpy.ndarray): A 3D binary mask where the object of interest is represented by non-zero values.
-
-    Returns:
-        numpy.ndarray: A 1D array containing the 3D coordinates of the inner center of the binary mask.
-    """
-    
     # Compute the Euclidean Distance Transform (EDT)
-    distances = distance_transform_edt(binary_mask) 
-    
+    distances = distance_transform_edt(binary_mask)
+
     # Find the 3d coordinate of the maximum distance
     max_index = np.argmax(distances)
     center = np.unravel_index(max_index, binary_mask.shape)

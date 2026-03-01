@@ -24,6 +24,12 @@ def save_channel(
     if(channel_type.lower() == "hemisphere"):
         file_name = f"{mouse.id.lower()}_sides.nii.gz"
         data = channel.astype(np.uint8, copy=False)
+    elif(channel_type.lower() == "edt"):
+        file_name = f"{mouse.id.lower()}_edt.nii.gz"
+        data = channel.astype(np.float32, copy=False)
+    elif(channel_type.lower() == "nedt"):
+        file_name = f"{mouse.id.lower()}_nedt.nii.gz"
+        data = channel.astype(np.float32, copy=False)
     else:
         raise ValueError(f"Unknown channel_type: {channel_type!r}")
 
