@@ -3,6 +3,7 @@
 # ================================================================
 import numpy as np
 
+from ....logger import logger
 from .dataclasses import LateralizedSegment, MethodOutput
 from .grouping import (
     get_grouping,
@@ -15,6 +16,8 @@ from .grouping import (
 # 1. Section: Functions
 # ================================================================
 def naive_grouping_separation(volume: np.ndarray) -> MethodOutput:
+    logger.debug("Naive Grouping applied")
+
     # 1. Get the biggest connected groups
     cluster_data = get_grouping(volume)
     cluster_sizes = cluster_data.sizes

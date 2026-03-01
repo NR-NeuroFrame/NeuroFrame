@@ -3,6 +3,7 @@
 # ================================================================
 import numpy as np
 
+from .....logger import logger
 from ..dataclasses import LateralizedSegment, MethodOutput
 from ..grouping import assign_side
 from .kmeans import perform_kmeans
@@ -17,6 +18,8 @@ from .kmeans_utils import(
 # 1. Section: KMeans Separation
 # ================================================================
 def clustering_separation(volume: np.ndarray, nr_centers: int = 30) -> MethodOutput:
+    logger.debug("Clustering separation applied")
+
     # 1. Generates a set of initial starting points based on the lateralized means
     random_centers = generate_initial_centers(volume, nr_centers=nr_centers)
 

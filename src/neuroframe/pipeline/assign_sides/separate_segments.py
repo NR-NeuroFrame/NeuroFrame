@@ -1,12 +1,11 @@
 # ================================================================
 # 0. Section: IMPORTS
 # ================================================================
-import warnings
-
 import numpy as np
 
 from tqdm import tqdm
 
+from ...logger import logger
 from ...mouse import Mouse
 from .validate import validate_lateralization
 from .summary import build_lateralization_summary
@@ -30,12 +29,6 @@ RIGHT_TAG: int = 2
 
 
 
-
-warnings.filterwarnings("error", message="Mean of empty slice.*", category=RuntimeWarning)
-np.seterr(invalid="raise", divide="raise")
-
-
-
 # ================================================================
 # 1. Section: Functions
 # ================================================================
@@ -48,6 +41,8 @@ def separate_segments(mouse: Mouse) -> np.ndarray:
     lateralized_volume = np.zeros_like(segmentations)
     summary_array = []
     for seg_lab in tqdm(segments_labels, desc="Separating segments", unit="seg"):
+        logger.info(f"Starting lateralization of segment {seg_lab}")
+
         # 1. Extracts left vs right segments
         seg_vol = np.where(segmentations == seg_lab, 1, 0)
         lateralized_segment = separate_single_segment(seg_vol)

@@ -3,6 +3,7 @@
 # ================================================================
 import numpy as np
 
+from ....logger import logger
 from .dataclasses import LateralizedSegment, MethodOutput
 from .grouping import (
     get_relevant_clusters_otsu,
@@ -11,19 +12,22 @@ from .grouping import (
     check_lateralization_condition
 )
 
+LIMIT_OF_FRAGMENTS: int = 100
 
 
 # ================================================================
 # 1. Section: Functions
 # ================================================================
 def fragmented_grouping_separation(cluster_data: ClusterData) -> MethodOutput:
+    logger.debug(f"Fragmented grouping applied ({len(cluster_data.sizes)} fragments, limit is {LIMIT_OF_FRAGMENTS})")
+
     # 1. Extract the data
     labeled_array = cluster_data.labeled_array
     cluster_sizes = cluster_data.sizes
 
     # 2. Checks if we should do fragmentation
     relevant_clusters = get_relevant_clusters_otsu(cluster_sizes)
-    has_enough_relevant_clusters = len(relevant_clusters) >= 2
+    has_enough_relevant_clusters = len(relevant_clusters) >= 2 and len(cluster_data.sizes) < LIMIT_OF_FRAGMENTS
 
     # 3. Merge Fragments if should (after the two biggest)
     if(has_enough_relevant_clusters): left, right = merge_fragments(labeled_array)

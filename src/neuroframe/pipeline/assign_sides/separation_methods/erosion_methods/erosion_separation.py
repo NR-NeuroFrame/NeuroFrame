@@ -5,6 +5,7 @@ import numpy as np
 
 from skimage.morphology import opening
 
+from .....logger import logger
 from ..dataclasses import LateralizedSegment, MethodOutput
 from .initiate_parameters import get_selem_shape, get_starting_opening_size
 from .similarity import get_volume_similarity
@@ -23,6 +24,7 @@ SIMILARITY_THRESHOLD: int = 90
 # 1. Section: Functions
 # ================================================================
 def destroying_bridges_separation(volume: np.ndarray, method: str) -> MethodOutput:
+    logger.debug(f"Destrying bridges with {method} method applied")
     # 1. Tryies multiple erosion (progressive intensity) to make sure we remove bridge
     has_found_separation, cluster_data = loop_opening(volume, method)
 

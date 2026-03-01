@@ -3,6 +3,7 @@
 # ================================================================
 import numpy as np
 
+from ....logger import logger
 from ....utils import separate_volume
 from .dataclasses import LateralizedSegment, MethodOutput
 
@@ -12,6 +13,7 @@ from .dataclasses import LateralizedSegment, MethodOutput
 # 1. Section: Functions
 # ================================================================
 def trivial_separation(volume: np.ndarray) -> MethodOutput:
+    logger.debug("Trivial separation applied")
     left, right = separate_volume(volume)
     midline_x = volume.shape[2] // 2
 
