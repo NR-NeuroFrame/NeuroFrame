@@ -3,6 +3,9 @@
 # ================================================================
 import os
 
+from pathlib import Path
+from typing import Type
+
 from ..mouse_data import (
     MicroCT,
     MRI,
@@ -46,10 +49,10 @@ class Mouse(Dunders, Properties, Plots):
         }
 
         # Only adds these if defined
-        self._add_not_none(hemisphere_path, Hemisphere)
-        self._add_not_none(segmentation_edt_path, SegmentationEDT)
-        self._add_not_none(segmentation_nedt_path, SegmentationNEDT)
-        self._add_not_none(field_bl_path, FieldBL)
+        self.add_path(hemisphere_path, Hemisphere)
+        self.add_path(segmentation_edt_path, SegmentationEDT)
+        self.add_path(segmentation_nedt_path, SegmentationNEDT)
+        self.add_path(field_bl_path, FieldBL)
 
         self.id = id
 
@@ -78,10 +81,11 @@ class Mouse(Dunders, Properties, Plots):
     # ================================================================
     # 2. Section: Helper Class Functions
     # ================================================================
-    def _add_not_none(self, path: str | None, cls) -> None:
+    def add_path(self, path: str | Path | None, cls: Type) -> None:
         attribute = get_attribute(cls)
         path_key = get_path_key(cls)
 
+        self.paths[path_key] = str(path) if path is not None else None
+
         if(path is not None):
-            setattr(self, attribute, cls(path))
-        self.paths[path_key] = path
+            setattr(self, attribute, cls(str(path)))

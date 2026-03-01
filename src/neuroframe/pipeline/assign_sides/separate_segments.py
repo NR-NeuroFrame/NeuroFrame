@@ -1,6 +1,7 @@
 # ================================================================
 # 0. Section: IMPORTS
 # ================================================================
+from neuroframe.mouse_data.Hemisphere import Hemisphere
 import numpy as np
 
 from tqdm import tqdm
@@ -71,12 +72,13 @@ def separate_segments(mouse: Mouse) -> np.ndarray:
 
     # 4. Save the channel near the data
     hemisphere_path = save_channel(mouse, lateralized_volume, "hemisphere")
+    mouse.add_path(hemisphere_path, Hemisphere)
 
     # 5. Also save lateralization description
     summary_df = build_lateralization_summary(summary_array)
     info_path = save_summary(mouse, summary_df, "hemisphere")
 
-    print(f" Channel saved at {hemisphere_path} wiht info saved at {info_path}")
+    print(f" Channel saved at {hemisphere_path} with info saved at {info_path}")
     return lateralized_volume
 
 # ──────────────────────────────────────────────────────

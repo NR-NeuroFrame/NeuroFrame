@@ -46,9 +46,6 @@ class Properties:
     @property
     def paths(self) -> dict[str, str]: return self._paths
 
-    @property
-    def hemishpere(self) -> Hemisphere | None: return self._hemishpere
-
 
 
     # ================================================================
@@ -67,9 +64,3 @@ class Properties:
         assert_folder_consitency(value)
 
         self._paths = value
-
-    @hemishpere.setter
-    def hemisphere(self, value: np.ndarray) -> None:
-        if(self.paths["hemisphere_path"] is None):
-            logger.warning("The path should also be defined for hemispheres as good practice")
-        self._hemishpere = value
