@@ -2,6 +2,7 @@
 # 0. Section: IMPORTS
 # ================================================================
 import pandas as pd
+from matplotlib import pyplot as plt
 
 from pathlib import Path
 from neuroframe import Mouse
@@ -99,9 +100,9 @@ if __name__ == '__main__':
         mri_path = get_pattern_file(MOUSE_FODLER, "*_proc_mri.nii.gz*")
         ct_path = get_pattern_file(MOUSE_FODLER, "*_proc_ct.nii.gz*")
         seg_path = get_pattern_file(MOUSE_FODLER, "*_proc_seg.nii.gz*")
-        mouse.mri.data = MRI(str(mri_path))
-        mouse.micro_ct.data = MicroCT(str(ct_path))
-        mouse.segmentation.data = Segmentation(str(seg_path))
+        mouse.mri = MRI(str(mri_path))
+        mouse.micro_ct = MicroCT(str(ct_path))
+        mouse.segmentation = Segmentation(str(seg_path))
         new_bregma, new_lambda = load_bl_coords(mouse)
 
     segmentation_info = preprocess_reference_df(mouse, segmentation_info)
@@ -128,6 +129,5 @@ if __name__ == '__main__':
     else:
         bl_space_path = get_pattern_file(MOUSE_FODLER, "*_bl_space.nii.gz*")
         mouse.add_path(bl_space_path, FieldBL)
-
 
     # dataframe_coords = nf.stereotaxic_coordinates(mice_p324, reference_df, (bregma_coords, lambda_coords), is_parallelized=True, verbose=2, mode='full_inner')

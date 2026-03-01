@@ -23,14 +23,9 @@ def generate_bl_space(mouse: Mouse, bregma: tuple | np.ndarray) -> np.ndarray:
     coords_mm = coords * voxel_size
     bregma_mm = bregma * voxel_size
 
-
     # 3. Centers to bregma
     coords_bl = bregma_mm - coords_mm
-    plt.figure()
-    plt.imshow(mouse.mri.data[:,100,:])
-    plt.imshow(coords_bl[:,100,:,2], alpha=0.5)
-    plt.title(bregma_mm)
-    plt.show()
+    coords_bl[..., 0] *= -1 # mirrors the z
 
     # 4. Saves the BL Space
     bl_space_path = save_channel(mouse, coords_bl, "bl")
