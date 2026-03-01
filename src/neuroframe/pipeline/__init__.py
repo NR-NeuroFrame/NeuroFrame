@@ -18,6 +18,7 @@ from .process_reference import preprocess_reference_df
 from .layer_colapse import layer_colapsing
 from .assign_sides import separate_segments
 from .edt_nedt_segments import edt_segments
+from .bl_space import generate_bl_space, mirror_midline_x
 #from .extract_frame import stereotaxic_coordinates
 
 
@@ -34,6 +35,8 @@ __all__ = [
     "layer_colapsing",
     "preprocess_reference_df",
     "separate_segments",
-    "edt_segments"
+    "edt_segments",
+    "generate_bl_space",
+    "mirror_midline_x"
     #"stereotaxic_coordinates"
 ]

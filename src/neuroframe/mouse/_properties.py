@@ -1,15 +1,12 @@
 # ================================================================
 # 0. Section: Imports
 # ================================================================
-import numpy as np
-from ..logger import logger
 from ._assertions import(
     assert_folder_consitency,
     assert_shape_consitency,
     assert_voxel_size_consitency,
     assert_id_folder_consitency
 )
-from ..mouse_data import Hemisphere
 
 
 

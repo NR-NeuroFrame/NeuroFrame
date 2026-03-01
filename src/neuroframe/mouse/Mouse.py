@@ -38,14 +38,14 @@ class Mouse(Dunders, Properties, Plots):
         segmentation_nedt_path: str | None = None,
         field_bl_path: str | None = None
     ) -> None:
-        self.micro_ct = MicroCT(ct_path)
-        self.mri = MRI(mri_path)
-        self.segmentation = Segmentation(segmentations_path)
+        self.micro_ct = MicroCT(str(ct_path))
+        self.mri = MRI(str(mri_path))
+        self.segmentation = Segmentation(str(segmentations_path))
 
         self.paths = {
-            'ct_path': ct_path,
-            'mri_path': mri_path,
-            'segmentations_path': segmentations_path,
+            'ct_path': str(ct_path),
+            'mri_path': str(mri_path),
+            'segmentations_path': str(segmentations_path),
         }
 
         # Only adds these if defined
