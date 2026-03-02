@@ -10,6 +10,6 @@ class Properties:
         return np.where(self.data > 0, 1, 0).astype(np.uint8)
 
     @property
-    def labels(self):
+    def labels(self) -> np.ndarray:
         labels = np.unique(self.data)
         return labels[labels != 0]

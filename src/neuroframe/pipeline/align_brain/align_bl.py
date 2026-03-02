@@ -3,8 +3,8 @@
 # ================================================================
 import numpy as np
 
-from ..mouse import Mouse
-from ..utils import compute_separation, rotate_mice, transform_points, xy_fine_tune, logg_separation
+from ...mouse import Mouse
+from ...utils import compute_separation, rotate_mice, transform_points, xy_fine_tune, logg_separation
 
 
 
@@ -67,7 +67,7 @@ def align_to_bl(mouse: Mouse, bregma_coords: np.array, lambda_coords: np.array, 
     >>> # assert new_bregma is not None
     >>> # assert new_lambda is not None
     """
-    
+
     # Center and rotate mice according to the Bregma and Lambda coordinates
     mri_shape = mouse.data_shape
 
@@ -87,7 +87,7 @@ def align_to_bl(mouse: Mouse, bregma_coords: np.array, lambda_coords: np.array, 
 
     # Fine tune the alignment in the XY plane
     if(deviation > 0): bl_fine_tune(mouse, bregma_coords, lambda_coords, deviation)
-        
+
     return np.round(bregma_coords).astype(int), np.array(lambda_coords).astype(int)
 
 

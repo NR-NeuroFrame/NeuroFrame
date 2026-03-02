@@ -1,4 +1,4 @@
-from .graphic_utils import transparent_to_color_cmap, tri_colormap, tri_alpha_colormap
+from .graphic_utils import tri_colormap, tri_alpha_colormap
 from .graphic_classes import AlphaColor
 
 NR_RED = "#E63946"

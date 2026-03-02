@@ -2,8 +2,11 @@
 # 0. Section: Imports
 # ================================================================
 import unittest
-from src.neuroframe.pipeline.align_bl import *
-from src.neuroframe.utils.save_utils import *
+import numpy as np
+
+from neuroframe import Mouse
+from neuroframe.pipeline.align_brain import align_to_bl
+from neuroframe.utils import save_object, load_object, TEMP_FOLDER
 
 
 

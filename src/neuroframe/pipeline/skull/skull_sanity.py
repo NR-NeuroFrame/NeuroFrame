@@ -4,8 +4,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..logger import logger
-from ..styling import alpha_red_cmap_256, alpha_blue_cmap_256
+from ...logger import logger
+from ...styling import alpha_red_cmap_256, alpha_blue_cmap_256
 
 
 
@@ -48,4 +48,3 @@ def _plot_projection_and_depth(projection_map: np.ndarray, depth_map: np.ndarray
     plt.tight_layout()
     plt.suptitle('Skull Projection and Depth Map', fontsize=16)
     plt.show()
-

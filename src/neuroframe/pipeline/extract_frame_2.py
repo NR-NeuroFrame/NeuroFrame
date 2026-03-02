@@ -9,11 +9,11 @@ from time import time
 from tqdm import tqdm
 from multiprocessing import Pool
 
-from neuroframe.pipeline.stereotaxic_step.stereotaxic_dataclass import LRPair
+from neuroframe.pipeline.stereotaxic_coords.stereotaxic_dataclass import LRPair
 
 from ..logger import logger
 from ..mouse import Mouse
-from .stereotaxic_step import StereotaxicConfig
+from .stereotaxic_coords import StereotaxicConfig
 from ..utils import separate_volume
 
 _CTX = None

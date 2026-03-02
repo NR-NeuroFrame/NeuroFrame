@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 
 from scipy.ndimage import center_of_mass as ndimage_center_of_mass
 
-from ..mouse import Mouse
-from ..utils import get_z_coord
+from ...mouse import Mouse
+from ...utils import get_z_coord
 
 
 
@@ -61,7 +61,7 @@ def plot_alignment(mouse: Mouse) -> None:
     >>> # plot_alignment(mock_mouse)
 
     """
-    
+
     # Get center of mass
     center_of_mass = np.round(ndimage_center_of_mass(mouse.segmentation.volume)).astype(int)
 
@@ -82,7 +82,7 @@ def plot_alignment(mouse: Mouse) -> None:
     fig, axes = plt.subplots(1, 3, figsize=(15, 8))
     for ax, title, img, point in zip(axes.flat, titles, data, points):
         if(not isinstance(img, tuple)): ax.imshow(img, cmap='gray')
-        else: 
+        else:
             for im in img: ax.imshow(im, alpha=0.5, cmap='gray')
 
         ax.vlines(v_lines[0], 0, v_lines[1], color='r', linestyle='--', linewidth=1, label='Midline')
@@ -108,7 +108,7 @@ def _get_projections(mouse: Mouse) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     # Determine slice to plot
     z_len = mouse.data_shape[0]
     z_low = (z_len*3)//4
-    
+
     # Get the data to plot
     mri_proj = mouse.mri.data[z_low:, :, :].mean(axis=0)
     micro_ct_proj = mouse.micro_ct.data[z_low:, :, :].mean(axis=0)

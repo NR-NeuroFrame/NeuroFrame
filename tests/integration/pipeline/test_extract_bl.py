@@ -2,10 +2,23 @@
 # 0. Section: Imports
 # ================================================================
 import unittest
+import numpy as np
 
-from src.neuroframe.pipeline.extract_bl import *
-from src.neuroframe.pipeline.extract_skull import *
-from src.neuroframe.utils.save_utils import *
+from neuroframe.pipeline import extract_skull, get_bregma_lambda
+from neuroframe.pipeline.bregma_lambda.extract_bl import extract_deformation_map
+from neuroframe.registrator import convert_input
+from neuroframe.templates import REF_TEMPLATES
+from neuroframe.pipeline.bregma_lambda.extract_bl import (
+    get_reference_point,
+    apply_shape,
+    compute_deviation
+)
+from neuroframe.utils import (
+    save_object,
+    load_object,
+    TEMP_FOLDER,
+    get_z_coord,
+)
 
 
 
@@ -91,5 +104,3 @@ class Test03ExtractBL(unittest.TestCase):
         self.assertIsInstance(lambda_, tuple, "Lambda should be a tuple")
         self.assertEqual(len(bregma), 3, "Bregma should have 3 coordinates (z, y, x)")
         self.assertEqual(len(lambda_), 3, "Lambda should have 3 coordinates (z, y, x)")
-
-        

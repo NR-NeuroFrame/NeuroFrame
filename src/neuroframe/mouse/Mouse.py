@@ -3,11 +3,23 @@
 # ================================================================
 import os
 
-from ..mouse_data import MicroCT, MRI, Segmentation
+from pathlib import Path
+from typing import Type
+
+from ..mouse_data import (
+    MicroCT,
+    MRI,
+    Segmentation,
+    Hemisphere,
+    SegmentationEDT,
+    SegmentationNEDT,
+    FieldBL
+)
 from ._dunders import Dunders
 from ._properties import Properties
 from ._plots import Plots
 from ._assertions import assert_required_files, assert_no_extra_files
+from ._utils import get_attribute, get_path_key
 
 
 
@@ -15,16 +27,32 @@ from ._assertions import assert_required_files, assert_no_extra_files
 # 1. Section: Mouse Classes
 # ================================================================
 class Mouse(Dunders, Properties, Plots):
-    def __init__(self, id: str, mri_path: str, ct_path: str, segmentations_path: str) -> None:
-        self.micro_ct = MicroCT(ct_path)
-        self.mri = MRI(mri_path)
-        self.segmentation = Segmentation(segmentations_path)
+    def __init__(
+        self,
+        id: str,
+        mri_path: str,
+        ct_path: str,
+        segmentations_path: str,
+        hemisphere_path: str | None = None,
+        segmentation_edt_path: str | None = None,
+        segmentation_nedt_path: str | None = None,
+        field_bl_path: str | None = None
+    ) -> None:
+        self.micro_ct = MicroCT(str(ct_path))
+        self.mri = MRI(str(mri_path))
+        self.segmentation = Segmentation(str(segmentations_path))
 
         self.paths = {
-            'ct_path': ct_path,
-            'mri_path': mri_path,
-            'segmentations_path': segmentations_path
+            'ct_path': str(ct_path),
+            'mri_path': str(mri_path),
+            'segmentations_path': str(segmentations_path),
         }
+
+        # Only adds these if defined
+        self.add_path(hemisphere_path, Hemisphere)
+        self.add_path(segmentation_edt_path, SegmentationEDT)
+        self.add_path(segmentation_nedt_path, SegmentationNEDT)
+        self.add_path(field_bl_path, FieldBL)
 
         self.id = id
 
@@ -47,3 +75,17 @@ class Mouse(Dunders, Properties, Plots):
             elif target == '_seg': segmentations_path = file_path
 
         return cls(id, mri_path, ct_path, segmentations_path)
+
+
+
+    # ================================================================
+    # 2. Section: Helper Class Functions
+    # ================================================================
+    def add_path(self, path: str | Path | None, cls: Type) -> None:
+        attribute = get_attribute(cls)
+        path_key = get_path_key(cls)
+
+        self.paths[path_key] = str(path) if path is not None else None
+
+        if(path is not None):
+            setattr(self, attribute, cls(str(path)))

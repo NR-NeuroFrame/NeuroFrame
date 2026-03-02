@@ -5,18 +5,13 @@ import numpy as np
 import SimpleITK as sitk
 from scipy.ndimage import zoom
 
-from ..logger import logger
-from ..mouse import Mouse
-from ..mouse_data import Segmentation
-from ..registrator import Registrator
-from ..utils import count_voxels, enlarge_shape
+from ...logger import logger
+from ...mouse import Mouse
+from ...mouse_data import Segmentation
+from ...registrator import Registrator
+from ...utils import count_voxels, enlarge_shape
+from ...templates import ALLEN_TEMPLATE
 
-# ──────────────────────────────────────────────────────
-# 0.1 Subsection: Universal Constants
-# ──────────────────────────────────────────────────────
-ALLEN_TEMPLATE = Segmentation(
-    "src/neuroframe/templates/allen_brain_25μm_ccf_2017.nii.gz"
-)
 
 
 # ================================================================

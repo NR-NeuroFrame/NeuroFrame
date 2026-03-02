@@ -1,8 +1,13 @@
+# ================================================================
+# 0. Section: IMPORTS
+# ================================================================
 import pandas as pd
 
-from neuroframe import (
-    ALLEN_TEMPLATE,
-    Mouse,
+from pathlib import Path
+from neuroframe import Mouse
+from neuroframe.templates import ALLEN_TEMPLATE
+from neuroframe.utils import get_folders
+from neuroframe.pipeline import (
     adapt_template,
     align_to_allen,
     align_to_bl,
@@ -12,21 +17,21 @@ from neuroframe import (
     preprocess_reference_df,
     stereotaxic_coordinates
 )
-from neuroframe.utils import get_folders
 
 
 
-def main():
-    mouse_ids = get_folders("data")
-    mouse_ids[:] = [x for x in mouse_ids if x not in {'T206', 'V257', 'S872'}] # this two are done
-
-    segment_df = pd.read_csv("data/annotations_info.csv")
-
-    for mouse_id in mouse_ids:
-        print(f"Starting mouse {mouse_id}")
-        mouse_run(mouse_id, "data", segment_df)
+# ================================================================
+# 1. Section: INPUTS
+# ================================================================
+DONE_MICE: set[str] = {'T206', 'V257', 'S872'}
+MICE_FODLER: Path = Path("data")
+SEGMENT_INFO_PATH: Path = Path("data/annotations_info.csv")
 
 
+
+# ================================================================
+# 2. Section: FUNCTIONS
+# ================================================================
 def mouse_run(mouse_id: str, group_folder_path: str, segment_df: pd.DataFrame) -> None:
     # Initialize the Brains
     folder_path = f"{group_folder_path}/{mouse_id}"
@@ -50,5 +55,16 @@ def mouse_run(mouse_id: str, group_folder_path: str, segment_df: pd.DataFrame) -
     )
 
 
-if __name__ == "__main__":
-    main()
+
+# ================================================================
+# 3. Section: MAIN
+# ================================================================
+if __name__ == '__main__':
+    mouse_ids = get_folders(str(MICE_FODLER))
+    mouse_ids[:] = [x for x in mouse_ids if x not in DONE_MICE] # this two are done
+
+    segment_df = pd.read_csv(str(SEGMENT_INFO_PATH))
+
+    for mouse_id in mouse_ids:
+        print(f"Starting mouse {mouse_id}")
+        mouse_run(mouse_id, str(MICE_FODLER), segment_df)
