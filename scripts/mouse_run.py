@@ -107,16 +107,13 @@ if __name__ == '__main__':
 
     segmentation_info = preprocess_reference_df(mouse, segmentation_info)
 
-    # 3. Save preprocessed mouse (proc_mri, proc_ct, proc_seg)
-    # TODO
-
-    # 4. Get the left-right separations channel
+    # 3. Get the left-right separations channel
     if not has_pattern_file(MOUSE_FODLER, "*_sides.nii.gz*"): lateralization = separate_segments(mouse)
     else:
         hemisphere_path = get_pattern_file(MOUSE_FODLER, "*_sides.nii.gz*")
         mouse.add_path(hemisphere_path, Hemisphere)
 
-    # 5. Get the edt and nedt spaces channels
+    # 4. Get the edt and nedt spaces channels
     if not has_pattern_file(MOUSE_FODLER, "*edt.nii.gz*"): edt_space, nedt_space = edt_segments(mouse)
     else:
         edt_path = get_pattern_file(MOUSE_FODLER, "*_edt.nii.gz*")
@@ -124,7 +121,7 @@ if __name__ == '__main__':
         mouse.add_path(edt_path, SegmentationEDT)
         mouse.add_path(nedt_path, SegmentationNEDT)
 
-    # 6. Get the BL space channel
+    # 5. Get the BL space channel
     if not has_pattern_file(MOUSE_FODLER, "*_bl_space.nii.gz*"): bl_space = generate_bl_space(mouse, new_bregma)
     else:
         bl_space_path = get_pattern_file(MOUSE_FODLER, "*_bl_space.nii.gz*")
