@@ -31,7 +31,8 @@ from neuroframe.pipeline import (
     preprocess_reference_df,
     separate_segments,
     edt_segments,
-    generate_bl_space
+    generate_bl_space,
+    get_segments_centers
 )
 
 
@@ -95,7 +96,7 @@ if __name__ == '__main__':
 
     # 2. Apply pipeline
     if not has_pattern_file(MOUSE_FODLER, "*_proc_mri.nii.gz*"):
-        new_bregma, new_lambda = run_preprocessing_step(mouse)
+        bregma, lambda_ = run_preprocessing_step(mouse)
     else:
         mri_path = get_pattern_file(MOUSE_FODLER, "*_proc_mri.nii.gz*")
         ct_path = get_pattern_file(MOUSE_FODLER, "*_proc_ct.nii.gz*")
@@ -103,8 +104,7 @@ if __name__ == '__main__':
         mouse.mri = MRI(str(mri_path))
         mouse.micro_ct = MicroCT(str(ct_path))
         mouse.segmentation = Segmentation(str(seg_path))
-        new_bregma, new_lambda = load_bl_coords(mouse)
-
+        bregma, lambda_ = load_bl_coords(mouse)
     segmentation_info = preprocess_reference_df(mouse, segmentation_info)
 
     # 3. Get the left-right separations channel
@@ -122,9 +122,10 @@ if __name__ == '__main__':
         mouse.add_path(nedt_path, SegmentationNEDT)
 
     # 5. Get the BL space channel
-    if not has_pattern_file(MOUSE_FODLER, "*_bl_space.nii.gz*"): bl_space = generate_bl_space(mouse, new_bregma)
+    if not has_pattern_file(MOUSE_FODLER, "*_bl_space.nii.gz*"): bl_space = generate_bl_space(mouse, bregma)
     else:
         bl_space_path = get_pattern_file(MOUSE_FODLER, "*_bl_space.nii.gz*")
         mouse.add_path(bl_space_path, FieldBL)
 
-    # dataframe_coords = nf.stereotaxic_coordinates(mice_p324, reference_df, (bregma_coords, lambda_coords), is_parallelized=True, verbose=2, mode='full_inner')
+    # 6. Calculates the center
+    centers_df = get_segments_centers(mouse, segmentation_info, TYPE_OF_CENTER)
