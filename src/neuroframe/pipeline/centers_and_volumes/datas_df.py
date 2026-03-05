@@ -4,9 +4,9 @@
 import numpy as np
 import pandas as pd
 
-from ..logger import logger
-from ..mouse import Mouse
-from .DataDF import DataDF
+from ...logger import logger
+from ...mouse import Mouse
+from .dataclasses import DataDF
 
 LEFT_COLS_NAMES = ["id", "x", "y", "z", "volume"]
 RIGHT_COLS_NAMES = ["id", "x", "y", "z", "volume"]

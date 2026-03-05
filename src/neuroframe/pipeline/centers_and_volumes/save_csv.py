@@ -5,8 +5,8 @@ import pandas as pd
 
 from pathlib import Path
 
-from .DataDF import DataDF
-from ..mouse import Mouse
+from .dataclasses import DataDF
+from ...mouse import Mouse
 
 
 

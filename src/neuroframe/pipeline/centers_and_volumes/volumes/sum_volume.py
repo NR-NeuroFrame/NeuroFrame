@@ -3,7 +3,7 @@
 # ================================================================
 import numpy as np
 
-from .Volume import Volume
+from ..dataclasses import Volume
 
 
 # ================================================================

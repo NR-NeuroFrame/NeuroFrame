@@ -5,7 +5,7 @@ import numpy as np
 
 from dataclasses import dataclass
 
-from ..logger import logger
+from ....logger import logger
 
 
 

@@ -31,9 +31,9 @@ from neuroframe.pipeline import (
     preprocess_reference_df,
     separate_segments,
     edt_segments,
-    generate_bl_space
+    generate_bl_space,
+    get_segments_data
 )
-from neuroframe.centers import get_segments_centers
 
 
 
@@ -128,4 +128,4 @@ if __name__ == '__main__':
         mouse.add_path(bl_space_path, FieldBL)
 
     # 6. Calculates the center
-    centers_df = get_segments_centers(mouse, segmentation_info, TYPE_OF_CENTER)
+    centers_df = get_segments_data(mouse, segmentation_info, TYPE_OF_CENTER)

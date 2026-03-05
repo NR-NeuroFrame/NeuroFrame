@@ -4,7 +4,7 @@
 import pandas as pd
 import numpy as np
 
-from .Center import Center
+from ..dataclasses import Center
 
 
 
