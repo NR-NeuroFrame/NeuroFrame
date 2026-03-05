@@ -13,14 +13,12 @@ from .bregma_lambda import (
     get_bregma_lambda,
     plot_bl
 )
-
 from .process_reference import preprocess_reference_df
 from .layer_colapse import layer_colapsing
 from .assign_sides import separate_segments
 from .edt_nedt_segments import edt_segments
 from .bl_space import generate_bl_space, mirror_midline_x
-#from .extract_frame import stereotaxic_coordinates
-
+from .centers_and_volumes import get_segments_data
 
 __all__ = [
     "adapt_template",
@@ -37,6 +35,6 @@ __all__ = [
     "separate_segments",
     "edt_segments",
     "generate_bl_space",
-    "mirror_midline_x"
-    #"stereotaxic_coordinates"
+    "mirror_midline_x",
+    "get_segments_data"
 ]
