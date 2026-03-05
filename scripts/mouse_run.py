@@ -45,7 +45,7 @@ MOUSE_ID: str = "P324"
 MOUSE_FODLER: Path = Path("../data/P324")
 SEGMENT_INFO_PATH: Path = Path("data/annotations_info.csv")
 TYPE_OF_COORDS: str = "auto"
-TYPE_OF_CENTER: str = "mean"
+TYPE_OF_CENTER: str = "inner"
 
 
 
