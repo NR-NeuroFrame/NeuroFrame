@@ -6,6 +6,7 @@ import pandas as pd
 
 from ..logger import logger
 from ..mouse import Mouse
+from .DataDF import DataDF
 
 LEFT_COLS_NAMES = ["id", "x", "y", "z", "volume"]
 RIGHT_COLS_NAMES = ["id", "x", "y", "z", "volume"]
@@ -21,10 +22,10 @@ def build_center_df(
     centers: np.ndarray,
     volumes: np.ndarray,
     info_df: pd.DataFrame
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> DataDF:
 
     # 1. Init the data_df
-    left_df, right_df, average_df = init_data_df()
+    data_dfs = init_data_df()
 
     # 2. Adds all the data to the data_df
     for idx, center in enumerate(centers):
@@ -36,7 +37,7 @@ def build_center_df(
                 f"When calling center {center.id} got volume {volume.center}"
             )
 
-        left_df.loc[len(left_df), LEFT_COLS_NAMES] = [
+        data_dfs.left_df.loc[len(data_dfs.left_df), LEFT_COLS_NAMES] = [
             center.id,
             center.left_center[2],
             center.left_center[1],
@@ -44,7 +45,7 @@ def build_center_df(
             volume.left_volume_mm(mouse.voxel_size)
         ]
 
-        right_df.loc[len(right_df), RIGHT_COLS_NAMES] = [
+        data_dfs.right_df.loc[len(data_dfs.right_df), RIGHT_COLS_NAMES] = [
             center.id,
             center.right_center[2],
             center.right_center[1],
@@ -52,7 +53,7 @@ def build_center_df(
             volume.right_volume_mm(mouse.voxel_size)
         ]
 
-        average_df.loc[len(average_df), AVERAGE_COLS_NAMES] = [
+        data_dfs.average_df.loc[len(data_dfs.average_df), AVERAGE_COLS_NAMES] = [
             center.id,
             center.average_center[2],
             center.average_center[1],
@@ -61,19 +62,19 @@ def build_center_df(
         ]
 
     # 3. Merges with info_df
-    left_df = info_df.merge(left_df, on='id', how='left')
-    right_df = info_df.merge(right_df, on='id', how='left')
-    average_df = info_df.merge(average_df, on='id', how='left')
+    data_dfs.left_df = info_df.merge(data_dfs.left_df, on='id', how='left')
+    data_dfs.right_df = info_df.merge(data_dfs.right_df, on='id', how='left')
+    data_dfs.average_df = info_df.merge(data_dfs.average_df, on='id', how='left')
 
-    return left_df, right_df, average_df
+    return data_dfs
 
 
 # ──────────────────────────────────────────────────────
 # 1.1 Subsection: Helper Functions
 # ──────────────────────────────────────────────────────
-def init_data_df() -> tuple:
+def init_data_df() -> DataDF:
     left_df = pd.DataFrame(columns=LEFT_COLS_NAMES)
     right_df = pd.DataFrame(columns=RIGHT_COLS_NAMES)
     average_df = pd.DataFrame(columns=AVERAGE_COLS_NAMES)
 
-    return left_df, right_df, average_df
+    return DataDF(left_df, right_df, average_df)
