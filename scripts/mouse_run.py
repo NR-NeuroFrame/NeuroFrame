@@ -31,9 +31,9 @@ from neuroframe.pipeline import (
     preprocess_reference_df,
     separate_segments,
     edt_segments,
-    generate_bl_space,
-    get_segments_centers
+    generate_bl_space
 )
+from neuroframe.centers import get_segments_centers
 
 
 
@@ -45,7 +45,7 @@ MOUSE_ID: str = "P324"
 MOUSE_FODLER: Path = Path("../data/P324")
 SEGMENT_INFO_PATH: Path = Path("data/annotations_info.csv")
 TYPE_OF_COORDS: str = "auto"
-TYPE_OF_CENTER: str = "inner"
+TYPE_OF_CENTER: str = "mean"
 
 
 

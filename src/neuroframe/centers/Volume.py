@@ -29,3 +29,9 @@ class Volume:
         right_volume = self.right_volume_mm(voxel_size)
 
         return np.mean([left_volume, right_volume])
+
+    def std_volume_mm(self, voxel_size: float) -> float:
+        left_volume = self.left_volume_mm(voxel_size)
+        right_volume = self.right_volume_mm(voxel_size)
+
+        return np.std([left_volume, right_volume])

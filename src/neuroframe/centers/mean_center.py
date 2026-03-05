@@ -25,8 +25,8 @@ def get_mean_centers(seg_lab: int, seg_left: np.ndarray, seg_right: np.ndarray) 
     # 3. Sore it in a dataclass
     seg_centers = Center(
         id=seg_lab,
-        left_center=left_center,
-        right_center=right_center
+        left_center=np.round(left_center, 0),
+        right_center=np.round(right_center, 0)
     )
 
     return seg_centers
