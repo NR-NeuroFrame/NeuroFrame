@@ -1,6 +1,8 @@
 # ================================================================
 # 0. Section: IMPORTS
 # ================================================================
+import sys
+
 import pandas as pd
 
 from pathlib import Path
@@ -39,9 +41,11 @@ from neuroframe.pipeline import (
 # ================================================================
 # 1. Section: INPUTS
 # ================================================================
-MOUSE_ID: str = "P874"
-#MOUSE_FODLER: Path = Path("tests/integration/fixtures/test_experiment/test_mouse_p874")
-MOUSE_FODLER: Path = Path("../data/P874")
+if len(sys.argv) < 2:
+    raise ValueError("Usage: python mouse_run.py <MOUSE_ID>")
+
+MOUSE_ID: str = sys.argv[1]
+MOUSE_FODLER: Path = Path(f"../data/{MOUSE_ID}")
 SEGMENT_INFO_PATH: Path = Path("data/annotations_info.csv")
 TYPE_OF_COORDS: str = "auto"
 TYPE_OF_CENTER: str = "inner"
