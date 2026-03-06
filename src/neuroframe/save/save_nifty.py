@@ -17,7 +17,7 @@ def save_channel(
     mouse: Mouse,
     channel: np.ndarray,
     channel_type: str,
-    reference_nib: nib.Nifty1Image | None = None
+    reference_nib: nib.Nifti1Image | None = None
 ) -> Path:
 
     # 1. Handles the channel type variables
@@ -70,7 +70,7 @@ def save_channel(
 # ──────────────────────────────────────────────────────
 # 1.1 Subsection: Assertions
 # ──────────────────────────────────────────────────────
-def assert_shape(ref_nib: nib.Nifty1Image, data: np.ndarray) -> None:
+def assert_shape(ref_nib: nib.Nifti1Image, data: np.ndarray) -> None:
     ref_shape = ref_nib.shape[:3]
     if data.shape != ref_shape:
         raise ValueError(f"Shape mismatch: channel {data.shape} vs reference {ref_shape}")
