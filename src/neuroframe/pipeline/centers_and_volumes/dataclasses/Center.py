@@ -20,14 +20,14 @@ class Center:
     converted: bool = False
 
     @property
-    def average_center(self) -> np.ndarray[float, float, float]:
+    def average_center(self) -> np.ndarray:
         mirror_right_center = self.right_center.copy()
         mirror_right_center[2] *= -1 # flips over x
 
         return np.mean([mirror_right_center, self.left_center], axis=0)
 
     @property
-    def std_center(self) -> np.ndarray[float, float, float]:
+    def std_center(self) -> np.ndarray:
         mirror_right_center = self.right_center.copy()
         mirror_right_center[2] *= -1 # flips over x
 
