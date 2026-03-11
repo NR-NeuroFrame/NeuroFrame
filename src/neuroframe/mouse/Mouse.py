@@ -3,6 +3,9 @@
 # ================================================================
 import os
 
+import numpy as np
+import pandas as pd
+
 from pathlib import Path
 from typing import Type
 
@@ -89,3 +92,33 @@ class Mouse(Dunders, Properties, Plots):
 
         if(path is not None):
             setattr(self, attribute, cls(str(path)))
+
+
+    def verify_segmentation(self, reference_df: pd.DataFrame, get_missing: bool = False) -> pd.DataFrame:
+        # 1. Extract the segments from the mice object
+        segments = np.unique(self.segmentation.data).astype(int)
+        missing = []
+
+        # 2. Remove background segment
+        segments = segments[segments != 0]
+
+        # 3. Iterate over every segment and check its correspondance
+        segments_df = pd.DataFrame(columns=['id', 'name', 'acronym'])
+        for i in segments:
+            if i in reference_df['id'].values:
+                new_row = pd.DataFrame([{
+                    'id': i,
+                    'name': reference_df.loc[reference_df['id'] == i, 'name'].values[0],
+                    'acronym': reference_df.loc[reference_df['id'] == i, 'acronym'].values[0]
+                }])
+                segments_df = pd.concat([segments_df, new_row], ignore_index=True)
+            else:
+                missing.append(i)
+                print(f"Segment {i} not found in the reference data.")
+
+        # 4. Get metadata on the process
+        segments_length = len(segments_df)
+        print(f"Number of segments: {segments_length}")
+
+        if(get_missing): return missing, segments_df
+        return segments_df
