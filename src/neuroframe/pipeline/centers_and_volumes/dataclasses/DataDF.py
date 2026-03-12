@@ -14,4 +14,4 @@ from dataclasses import dataclass
 class DataDF:
     left_df: pd.DataFrame
     right_df: pd.DataFrame
-    average_df: pd.DataFrame
+    average_df: pd.DataFrame | None

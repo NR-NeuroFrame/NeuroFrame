@@ -47,7 +47,7 @@ WT_MOUSE_ID: Path = WT_MOUSE_FOLDER.stem
 SEGMENT_INFO_PATH: Path = Path("data/annotations_info.csv")
 
 TYPE_OF_COORDS: str = "auto"
-TYPE_OF_CENTER: str = "wt-shape"
+TYPE_OF_CENTER: str = "wt_shape"
 
 
 
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     mouse = Mouse.from_folder(MOUSE_ID, MOUSE_FOLDER)
     segmentation_info = pd.read_csv(SEGMENT_INFO_PATH)
 
-    if(TYPE_OF_CENTER == "wt-shape"):
+    if(TYPE_OF_CENTER == "wt_shape"):
         wt_mouse = Mouse.from_folder(WT_MOUSE_ID, WT_MOUSE_FOLDER)
         mri_path = get_pattern_file(WT_MOUSE_FOLDER, "*_proc_mri.nii.gz*")
         ct_path = get_pattern_file(WT_MOUSE_FOLDER, "*_proc_ct.nii.gz*")

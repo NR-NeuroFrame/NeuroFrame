@@ -9,7 +9,7 @@ from tqdm import tqdm
 from ...mouse import Mouse
 from .dataclasses import DataDF
 from .datas_df import build_center_df
-from .save_csv import save_mouse_results
+from .save_csv import save_mouse_results, save_mouse_pca
 from .volumes import get_segment_volumes
 from .pca import get_segment_pca, buid_pca_df
 from .centers import (
@@ -41,7 +41,7 @@ def get_segments_data(
     volumes = []
     pcas = []
     shape_pca = []
-    for seg_lab in tqdm(segments_labels[1:], desc="Calculating centers", unit="seg"):
+    for seg_lab in tqdm(segments_labels[1:5], desc="Calculating centers", unit="seg"):
         # 2.1 Get the segment data
         seg_lat = np.where(segmentations == seg_lab, segments_lateralized, 0)
         seg_left = np.where(seg_lat == 1, 1, 0)
@@ -54,8 +54,10 @@ def get_segments_data(
             seg_left = np.where(seg_lat == 1, segments_nedt, 0)
             seg_right = np.where(seg_lat == 2, segments_nedt, 0)
             seg_centers = get_inner_centers(seg_lab, seg_left, seg_right)
-        elif(mode.lower() == "wt-shape"):
+        elif(mode.lower() == "wt_shape"):
             seg_centers, wt_seg_pca = get_shape_centers(seg_lab, seg_left, seg_right, template_mouse)
+            print(wt_seg_pca.left_pca)
+            print(wt_seg_pca.left_pca.shape)
             shape_pca.append(wt_seg_pca)
 
         # 2.3 Convert to bl-mm coordinates
@@ -77,6 +79,9 @@ def get_segments_data(
     pcas = np.array(pcas)
     shape_pca = np.array(shape_pca)
 
+    print(pcas[0].left_pca.shape)
+    print(shape_pca[0].left_pca.shape)
+
 
     # 3. Builds the DF
     data_dfs = build_center_df(mouse, centers, volumes, info_df)
@@ -86,14 +91,14 @@ def get_segments_data(
     print(f"The mouse results where saved at {save_path}")
 
     # 5. Save the pcas
-    pca_df = buid_pca_df(mouse, pcas)
-    pca_path = save_mouse_results(mouse, pca_df, mode="pca")
+    pca_df = buid_pca_df(mouse, pcas, info_df)
+    pca_path = save_mouse_pca(mouse, pca_df, mode="pca")
     print(f"The segments pca where saved at {pca_path}")
 
     # 6. Save the shape-pcas if available
     if(len(shape_pca) > 0):
-        shape_pca_df = buid_pca_df(mouse, shape_pca)
-        shape_pca_path = save_mouse_results(mouse, shape_pca_df, mode="shape_pca")
+        shape_pca_df = buid_pca_df(mouse, shape_pca, info_df)
+        shape_pca_path = save_mouse_pca(mouse, shape_pca_df, mode="shape_pca")
         print(f"The segments wt shape pca where saved at {shape_pca_path}")
 
     return data_dfs

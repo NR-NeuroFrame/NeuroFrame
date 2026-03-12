@@ -11,12 +11,11 @@ from ..pca import get_volume_pca_components
 from ..dataclasses import Center, PCASummary
 from .inner_center import compute_safe_inner
 from ....styling import alpha_red_cmap_256, alpha_blue_cmap_256
+from ..pca import get_segment_pca
 
 SEGMENT_REGISTRATOR = Registrator(
-    method="affine",
-    multiple_resolutions=True,
-    #numberOfIterations=500,
-    #learning_rate=0.1
+    method="rigid",
+    multiple_resolutions=True
 )
 
 
@@ -42,9 +41,6 @@ def get_shape_centers(
     wt_left = np.where(wt_seg == 1, 1, 0)
     wt_right = np.where(wt_seg == 2, 1, 0)
 
-    plot_compare_seg(seg_left, wt_left)
-    plot_compare_seg(seg_right, wt_right)
-
     # 2. Do the rigid registration to the mci shape
     wt_trs_left, left_transform = SEGMENT_REGISTRATOR.register(
         seg_left, wt_left
@@ -61,9 +57,6 @@ def get_shape_centers(
     wt_left_trs_nedt = SEGMENT_REGISTRATOR.apply_transform(wt_left_nedt, left_transform)
     wt_right_trs_nedt = SEGMENT_REGISTRATOR.apply_transform(wt_right_nedt, right_transform)
 
-    plot_compare_seg(seg_left, wt_trs_left)
-    plot_compare_seg(seg_right, wt_trs_right)
-
     # 5. Get the centers
     left_center = compute_safe_inner(wt_left_trs_nedt)
     right_center = compute_safe_inner(wt_right_trs_nedt)
@@ -74,16 +67,9 @@ def get_shape_centers(
     )
 
     # 6. Get the PCA of the transformed
-    left_pca = get_volume_pca_components(wt_trs_left)
-    right_pca = get_volume_pca_components(wt_trs_right)
-    pca_data = PCASummary(
-        id=seg_lab,
-        left_pca=left_pca,
-        right_pca=right_pca
-    )
-
-    plot_pca_orientations(wt_trs_left)
-    plot_pca_orientations(wt_trs_right)
+    pca_data = get_segment_pca(seg_lab, wt_trs_left, wt_trs_right)
+    print(pca_data.left_pca)
+    print(pca_data.left_pca.shape)
 
     return seg_center, pca_data
 

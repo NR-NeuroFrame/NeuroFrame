@@ -20,6 +20,6 @@ class PCASummary:
     def empty(cls, label: int) -> 'PCASummary':
         return cls(
             id=label,
-            left_pca=np.zeros(3, dtype=float),
-            right_pca=np.zeros(3, dtype=float),
+            left_pca=np.zeros((3,3), dtype=float),
+            right_pca=np.zeros((3,3), dtype=float),
         )
