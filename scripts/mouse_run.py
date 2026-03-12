@@ -39,12 +39,15 @@ from neuroframe.pipeline import (
 # ================================================================
 # 1. Section: INPUTS
 # ================================================================
-MOUSE_ID: str = "P874"
-#MOUSE_FODLER: Path = Path("tests/integration/fixtures/test_experiment/test_mouse_p874")
-MOUSE_FODLER: Path = Path("../data/P874")
+MOUSE_FOLDER: Path = Path("../data/P874")
+MOUSE_ID: str = MOUSE_FOLDER.stem
+WT_MOUSE_FOLDER: Path = Path("../data/W001")
+WT_MOUSE_ID: Path = WT_MOUSE_FOLDER.stem
+
 SEGMENT_INFO_PATH: Path = Path("data/annotations_info.csv")
+
 TYPE_OF_COORDS: str = "auto"
-TYPE_OF_CENTER: str = "inner"
+TYPE_OF_CENTER: str = "wt-shape"
 
 
 
@@ -90,17 +93,34 @@ def get_pattern_file(mouse_folder: Path, pattern: str = "*_sides.nii.gz*") -> Pa
 # ================================================================
 if __name__ == '__main__':
     # 1. Import the data
-    mouse = Mouse.from_folder(MOUSE_ID, MOUSE_FODLER)
+    mouse = Mouse.from_folder(MOUSE_ID, MOUSE_FOLDER)
     segmentation_info = pd.read_csv(SEGMENT_INFO_PATH)
 
+    if(TYPE_OF_CENTER == "wt-shape"):
+        wt_mouse = Mouse.from_folder(WT_MOUSE_ID, WT_MOUSE_FOLDER)
+        mri_path = get_pattern_file(WT_MOUSE_FOLDER, "*_proc_mri.nii.gz*")
+        ct_path = get_pattern_file(WT_MOUSE_FOLDER, "*_proc_ct.nii.gz*")
+        seg_path = get_pattern_file(WT_MOUSE_FOLDER, "*_proc_seg.nii.gz*")
+        hemisphere_path = get_pattern_file(WT_MOUSE_FOLDER, "*_sides.nii.gz*")
+        edt_path = get_pattern_file(WT_MOUSE_FOLDER, "*_edt.nii.gz*")
+        nedt_path = get_pattern_file(WT_MOUSE_FOLDER, "*_nedt.nii.gz*")
+        bl_space_path = get_pattern_file(WT_MOUSE_FOLDER, "*_bl_space.nii.gz*")
+        wt_mouse.mri = MRI(str(mri_path))
+        wt_mouse.micro_ct = MicroCT(str(ct_path))
+        wt_mouse.segmentation = Segmentation(str(seg_path))
+        wt_mouse.add_path(hemisphere_path, Hemisphere)
+        wt_mouse.add_path(edt_path, SegmentationEDT)
+        wt_mouse.add_path(nedt_path, SegmentationNEDT)
+        wt_mouse.add_path(bl_space_path, FieldBL)
+
     # 2. Apply pipeline
-    if not has_pattern_file(MOUSE_FODLER, "*_proc_mri.nii.gz*"):
+    if not has_pattern_file(MOUSE_FOLDER, "*_proc_mri.nii.gz*"):
         print("Applying Brain Alignment to BL space")
         bregma, lambda_ = run_preprocessing_step(mouse)
     else:
-        mri_path = get_pattern_file(MOUSE_FODLER, "*_proc_mri.nii.gz*")
-        ct_path = get_pattern_file(MOUSE_FODLER, "*_proc_ct.nii.gz*")
-        seg_path = get_pattern_file(MOUSE_FODLER, "*_proc_seg.nii.gz*")
+        mri_path = get_pattern_file(MOUSE_FOLDER, "*_proc_mri.nii.gz*")
+        ct_path = get_pattern_file(MOUSE_FOLDER, "*_proc_ct.nii.gz*")
+        seg_path = get_pattern_file(MOUSE_FOLDER, "*_proc_seg.nii.gz*")
         mouse.mri = MRI(str(mri_path))
         mouse.micro_ct = MicroCT(str(ct_path))
         mouse.segmentation = Segmentation(str(seg_path))
@@ -108,24 +128,24 @@ if __name__ == '__main__':
     segmentation_info = preprocess_reference_df(mouse, segmentation_info)
 
     # 3. Get the left-right separations channel
-    if not has_pattern_file(MOUSE_FODLER, "*_sides.nii.gz*"): lateralization = separate_segments(mouse)
+    if not has_pattern_file(MOUSE_FOLDER, "*_sides.nii.gz*"): lateralization = separate_segments(mouse)
     else:
-        hemisphere_path = get_pattern_file(MOUSE_FODLER, "*_sides.nii.gz*")
+        hemisphere_path = get_pattern_file(MOUSE_FOLDER, "*_sides.nii.gz*")
         mouse.add_path(hemisphere_path, Hemisphere)
 
     # 4. Get the edt and nedt spaces channels
-    if not has_pattern_file(MOUSE_FODLER, "*edt.nii.gz*"): edt_space, nedt_space = edt_segments(mouse)
+    if not has_pattern_file(MOUSE_FOLDER, "*edt.nii.gz*"): edt_space, nedt_space = edt_segments(mouse)
     else:
-        edt_path = get_pattern_file(MOUSE_FODLER, "*_edt.nii.gz*")
-        nedt_path = get_pattern_file(MOUSE_FODLER, "*_nedt.nii.gz*")
+        edt_path = get_pattern_file(MOUSE_FOLDER, "*_edt.nii.gz*")
+        nedt_path = get_pattern_file(MOUSE_FOLDER, "*_nedt.nii.gz*")
         mouse.add_path(edt_path, SegmentationEDT)
         mouse.add_path(nedt_path, SegmentationNEDT)
 
     # 5. Get the BL space channel
-    if not has_pattern_file(MOUSE_FODLER, "*_bl_space.nii.gz*"): bl_space = generate_bl_space(mouse, bregma)
+    if not has_pattern_file(MOUSE_FOLDER, "*_bl_space.nii.gz*"): bl_space = generate_bl_space(mouse, bregma)
     else:
-        bl_space_path = get_pattern_file(MOUSE_FODLER, "*_bl_space.nii.gz*")
+        bl_space_path = get_pattern_file(MOUSE_FOLDER, "*_bl_space.nii.gz*")
         mouse.add_path(bl_space_path, FieldBL)
 
     # 6. Calculates the center
-    centers_df = get_segments_data(mouse, segmentation_info, TYPE_OF_CENTER)
+    centers_df = get_segments_data(mouse, segmentation_info, TYPE_OF_CENTER, wt_mouse)

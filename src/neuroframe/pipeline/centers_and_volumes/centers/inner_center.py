@@ -11,7 +11,7 @@ from ..dataclasses import Center
 # ================================================================
 # 1. Section: Functions
 # ================================================================
-def get_inner_centers(seg_lab: int, seg_left: np.ndarray, seg_right: np.ndarray) -> pd.DataFrame:
+def get_inner_centers(seg_lab: int, seg_left: np.ndarray, seg_right: np.ndarray) -> Center:
     # 1. Compute the inner center
     left_center = compute_safe_inner(seg_left)
     right_center = compute_safe_inner(seg_right)
