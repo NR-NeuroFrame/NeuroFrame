@@ -149,3 +149,4 @@ if __name__ == '__main__':
 
     # 6. Calculates the center
     centers_df = get_segments_data(mouse, segmentation_info, TYPE_OF_CENTER, wt_mouse)
+    centers_df = get_segments_data(mouse, segmentation_info, "inner")

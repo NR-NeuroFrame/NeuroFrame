@@ -9,7 +9,7 @@ from ....mouse import Mouse
 from ....registrator import Registrator
 from ..pca import get_volume_pca_components
 from ..dataclasses import Center, PCASummary
-from .inner_center import compute_safe_inner
+from .inner_center import get_inner_centers
 from ....styling import alpha_red_cmap_256, alpha_blue_cmap_256
 from ..pca import get_segment_pca
 
@@ -25,8 +25,8 @@ SEGMENT_REGISTRATOR = Registrator(
 # ================================================================
 def get_shape_centers(
     seg_lab: int,
-    seg_left: np.ndarray,
-    seg_right: np.ndarray,
+    seg_left_nedt: np.ndarray,
+    seg_right_nedt: np.ndarray,
     template_mouse: Mouse
 ) -> tuple:
     # 0. If segment not present in WT just skip this (make all 0,0,0 ?)
@@ -40,6 +40,9 @@ def get_shape_centers(
     wt_seg = np.where(template_mouse.segmentation.data == seg_lab, template_mouse.hemisphere.data, 0)
     wt_left = np.where(wt_seg == 1, 1, 0)
     wt_right = np.where(wt_seg == 2, 1, 0)
+
+    seg_left = np.where(seg_left_nedt > 0, 1, 0)
+    seg_right = np.where(seg_right_nedt > 0, 1, 0)
 
     # 2. Do the rigid registration to the mci shape
     wt_trs_left, left_transform = SEGMENT_REGISTRATOR.register(
@@ -58,18 +61,16 @@ def get_shape_centers(
     wt_right_trs_nedt = SEGMENT_REGISTRATOR.apply_transform(wt_right_nedt, right_transform)
 
     # 5. Get the centers
-    left_center = compute_safe_inner(wt_left_trs_nedt)
-    right_center = compute_safe_inner(wt_right_trs_nedt)
-    seg_center = Center(
-        id=seg_lab,
-        left_center=left_center,
-        right_center=right_center
-    )
+    seg_center = get_inner_centers(seg_lab, wt_left_trs_nedt, wt_right_trs_nedt)
+    print(seg_center)
+    test_center = get_inner_centers(seg_lab, seg_left_nedt, seg_right_nedt)
+    print(test_center)
 
     # 6. Get the PCA of the transformed
     pca_data = get_segment_pca(seg_lab, wt_trs_left, wt_trs_right)
-    print(pca_data.left_pca)
-    print(pca_data.left_pca.shape)
+
+    quick_overlay(wt_left_trs_nedt, seg_left, seg_center.left_center, test_center.left_center)
+    #print(seg_center.conv)
 
     return seg_center, pca_data
 
@@ -88,6 +89,23 @@ def plot_compare_seg(volume, wt_volume):
     plt.tight_layout()
     plt.show()
 
+def quick_overlay(vol1, vol2, center1, center2, step=4, max_points=8000):
+    c1 = np.argwhere(vol1[::step, ::step, ::step] > 0)
+    c2 = np.argwhere(vol2[::step, ::step, ::step] > 0)
+
+    if len(c1) > max_points:
+        c1 = c1[np.random.choice(len(c1), max_points, replace=False)]
+    if len(c2) > max_points:
+        c2 = c2[np.random.choice(len(c2), max_points, replace=False)]
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(center1[0], center1[1], center1[2], s=5, alpha=1, label='center1')
+    ax.scatter(center2[0], center2[1], center2[2], s=5, alpha=1, label='center2')
+    ax.scatter(c1[:, 0], c1[:, 1], c1[:, 2], s=1, alpha=0.5, label='vol1')
+    ax.scatter(c2[:, 0], c2[:, 1], c2[:, 2], s=1, alpha=0.5, label='vol2')
+    ax.legend()
+    plt.show()
 
 def plot_pca_orientations(volume: np.ndarray, **kwargs):
     # Compute PCA components for the volume

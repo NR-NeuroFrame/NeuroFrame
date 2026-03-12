@@ -51,17 +51,18 @@ def get_segments_data(
         if(mode.lower() == "mean"):
             seg_centers = get_mean_centers(seg_lab, seg_left, seg_right)
         elif(mode.lower() == "inner"):
-            seg_left = np.where(seg_lat == 1, segments_nedt, 0)
-            seg_right = np.where(seg_lat == 2, segments_nedt, 0)
-            seg_centers = get_inner_centers(seg_lab, seg_left, seg_right)
+            seg_left_nedt = np.where(seg_lat == 1, segments_nedt, 0)
+            seg_right_nedt = np.where(seg_lat == 2, segments_nedt, 0)
+            seg_centers = get_inner_centers(seg_lab, seg_left_nedt, seg_right_nedt)
         elif(mode.lower() == "wt_shape"):
-            seg_centers, wt_seg_pca = get_shape_centers(seg_lab, seg_left, seg_right, template_mouse)
-            print(wt_seg_pca.left_pca)
-            print(wt_seg_pca.left_pca.shape)
+            seg_left_nedt = np.where(seg_lat == 1, segments_nedt, 0)
+            seg_right_nedt = np.where(seg_lat == 2, segments_nedt, 0)
+            seg_centers, wt_seg_pca = get_shape_centers(seg_lab, seg_left_nedt, seg_right_nedt, template_mouse)
             shape_pca.append(wt_seg_pca)
 
         # 2.3 Convert to bl-mm coordinates
         seg_centers.convert_center_to_bl(segments_bl)
+        print(seg_centers)
 
         # 2.4 Get the volumes
         seg_volumes = get_segment_volumes(seg_lab, seg_left, seg_right)
@@ -78,10 +79,6 @@ def get_segments_data(
     volumes = np.array(volumes)
     pcas = np.array(pcas)
     shape_pca = np.array(shape_pca)
-
-    print(pcas[0].left_pca.shape)
-    print(shape_pca[0].left_pca.shape)
-
 
     # 3. Builds the DF
     data_dfs = build_center_df(mouse, centers, volumes, info_df)
