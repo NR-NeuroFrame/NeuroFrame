@@ -23,7 +23,7 @@ class PCADF:
 # ================================================================
 # 1. Section: Building the DFs
 # ================================================================
-def buid_pca_df(pcas: np.ndarray, info_df: pd.DataFrame) -> PCADF:
+def build_pca_df(pcas: np.ndarray, info_df: pd.DataFrame) -> PCADF:
     pca_dfs = init_pca_df()
 
     for idx, pca in enumerate(pcas):

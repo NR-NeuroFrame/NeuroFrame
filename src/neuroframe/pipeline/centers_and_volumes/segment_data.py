@@ -7,7 +7,7 @@ import numpy as np
 from tqdm import tqdm
 
 from ...mouse import Mouse
-from ..segment_pca import save_mouse_pca, buid_pca_df
+from ..segment_pca import save_mouse_pca, build_pca_df
 from .dataclasses import DataDF
 from .datas_df import build_center_df
 from .save_csv import save_mouse_results
@@ -40,7 +40,7 @@ def get_segments_data(
     centers = []
     volumes = []
     shape_pca = []
-    for seg_lab in tqdm(segments_labels, desc="Calculating centers", unit="seg"):
+    for seg_lab in tqdm(segments_labels[2:5], desc="Calculating centers", unit="seg"):
         # 2.1 Get the segment data
         seg_lat = np.where(segmentations == seg_lab, segments_lateralized, 0)
         seg_left = np.where(seg_lat == 1, 1, 0)
@@ -82,7 +82,7 @@ def get_segments_data(
 
     # 5. Save the shape-pcas if available
     if(len(shape_pca) > 0):
-        shape_pca_df = buid_pca_df(mouse, shape_pca, info_df)
+        shape_pca_df = build_pca_df(shape_pca, info_df)
         shape_pca_path = save_mouse_pca(mouse, shape_pca_df, tag="wt_shape")
         print(f"The segments wt shape pca where saved at {shape_pca_path}")
 

@@ -106,6 +106,7 @@ if __name__ == '__main__':
         edt_path = get_pattern_file(WT_MOUSE_FOLDER, "*_edt.nii.gz*")
         nedt_path = get_pattern_file(WT_MOUSE_FOLDER, "*_nedt.nii.gz*")
         bl_space_path = get_pattern_file(WT_MOUSE_FOLDER, "*_bl_space.nii.gz*")
+
         wt_mouse.mri = MRI(str(mri_path))
         wt_mouse.micro_ct = MicroCT(str(ct_path))
         wt_mouse.segmentation = Segmentation(str(seg_path))

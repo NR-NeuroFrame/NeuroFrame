@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from ...mouse import Mouse
 from .computation import get_segment_pca
-from .pca_df import buid_pca_df
+from .pca_df import build_pca_df
 from .save_pca import save_mouse_pca
 
 
@@ -28,7 +28,7 @@ def get_segments_pca(
 
     # 1. Loop over all the data
     pcas = []
-    for seg_lab in tqdm(segments_labels, desc="Calculating PCA", unit="PCA"):
+    for seg_lab in tqdm(segments_labels[2:5], desc="Calculating PCA", unit="PCA"):
         # 1.1 Lateralize the segment
         seg_lat = np.where(segmentations == seg_lab, segments_lateralized, 0)
         seg_left = np.where(seg_lat == 1, 1, 0)
@@ -40,7 +40,7 @@ def get_segments_pca(
     pcas = np.array(pcas)
 
     # 2. Builds the dfs
-    pca_dfs = buid_pca_df(mouse, pcas, info_df)
+    pca_dfs = build_pca_df(pcas, info_df)
 
     # 3. Store in a file
     pca_path = save_mouse_pca(mouse, pca_dfs)
