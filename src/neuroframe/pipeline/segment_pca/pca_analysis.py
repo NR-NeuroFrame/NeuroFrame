@@ -28,7 +28,7 @@ def get_segments_pca(
 
     # 1. Loop over all the data
     pcas = []
-    for seg_lab in tqdm(segments_labels[2:5], desc="Calculating PCA", unit="PCA"):
+    for seg_lab in tqdm(segments_labels, desc="Calculating PCA", unit="PCA"):
         # 1.1 Lateralize the segment
         seg_lat = np.where(segmentations == seg_lab, segments_lateralized, 0)
         seg_left = np.where(seg_lat == 1, 1, 0)
