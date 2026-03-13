@@ -19,6 +19,16 @@ class Center:
     right_center: np.ndarray
     converted: bool = False
 
+    @classmethod
+    def empty(cls, label: int):
+        return cls(
+            id=label,
+            left_center=np.zeros(3, dtype=float),
+            right_center=np.zeros(3, dtype=float),
+            converted=False
+        )
+
+
     @property
     def average_center(self) -> np.ndarray:
         mirror_right_center = self.right_center.copy()

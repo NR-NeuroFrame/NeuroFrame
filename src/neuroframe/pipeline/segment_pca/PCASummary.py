@@ -1,7 +1,7 @@
 # ================================================================
 # 0. Section: IMPORTS
 # ================================================================
-import pandas as pd
+import numpy as np
 
 from dataclasses import dataclass
 
@@ -11,7 +11,15 @@ from dataclasses import dataclass
 # 1. Section: Functions
 # ================================================================
 @dataclass
-class DataDF:
-    left_df: pd.DataFrame
-    right_df: pd.DataFrame
-    average_df: pd.DataFrame | None
+class PCASummary:
+    id: int
+    left_pca: np.ndarray
+    right_pca: np.ndarray
+
+    @classmethod
+    def empty(cls, label: int) -> 'PCASummary':
+        return cls(
+            id=label,
+            left_pca=np.zeros((3,3), dtype=float),
+            right_pca=np.zeros((3,3), dtype=float),
+        )

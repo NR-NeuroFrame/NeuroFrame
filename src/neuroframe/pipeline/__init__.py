@@ -19,6 +19,7 @@ from .assign_sides import separate_segments
 from .edt_nedt_segments import edt_segments
 from .bl_space import generate_bl_space, mirror_midline_x
 from .centers_and_volumes import get_segments_data
+from .segment_pca import get_segments_pca
 
 __all__ = [
     "adapt_template",
@@ -36,5 +37,6 @@ __all__ = [
     "edt_segments",
     "generate_bl_space",
     "mirror_midline_x",
-    "get_segments_data"
+    "get_segments_data",
+    "get_segments_pca"
 ]
