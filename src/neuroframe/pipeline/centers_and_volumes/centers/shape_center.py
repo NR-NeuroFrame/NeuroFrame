@@ -5,13 +5,16 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-from ....mouse import Mouse
-from ....registrator import Registrator
-from ..pca import get_volume_pca_components
-from ..dataclasses import Center, PCASummary
-from .inner_center import get_inner_centers
 from ....styling import alpha_red_cmap_256, alpha_blue_cmap_256
-from ..pca import get_segment_pca
+from ....registrator import Registrator
+from ....mouse import Mouse
+from ...segment_pca import (
+    PCASummary,
+    get_segment_pca,
+    get_volume_pca
+)
+from ..dataclasses import Center
+from .inner_center import get_inner_centers
 
 SEGMENT_REGISTRATOR = Registrator(
     method="rigid",
@@ -62,17 +65,16 @@ def get_shape_centers(
 
     # 5. Get the centers
     seg_center = get_inner_centers(seg_lab, wt_left_trs_nedt, wt_right_trs_nedt)
-    print(seg_center)
-    test_center = get_inner_centers(seg_lab, seg_left_nedt, seg_right_nedt)
-    print(test_center)
 
     # 6. Get the PCA of the transformed
     pca_data = get_segment_pca(seg_lab, wt_trs_left, wt_trs_right)
 
-    quick_overlay(wt_left_trs_nedt, seg_left, seg_center.left_center, test_center.left_center)
-    #print(seg_center.conv)
-
     return seg_center, pca_data
+
+
+
+
+
 
 def plot_compare_seg(volume, wt_volume):
     main_slices = get_main_slices(volume)
@@ -109,7 +111,7 @@ def quick_overlay(vol1, vol2, center1, center2, step=4, max_points=8000):
 
 def plot_pca_orientations(volume: np.ndarray, **kwargs):
     # Compute PCA components for the volume
-    volume_pca = get_volume_pca_components(volume)
+    volume_pca = get_volume_pca(volume)
 
     # Start the plotting
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))

@@ -11,7 +11,6 @@ from .dataclasses import DataDF
 from .datas_df import build_center_df
 from .save_csv import save_mouse_results, save_mouse_pca
 from .volumes import get_segment_volumes
-from .pca import get_segment_pca, buid_pca_df
 from .centers import (
     get_inner_centers,
     get_mean_centers,
@@ -39,7 +38,6 @@ def get_segments_data(
     # 2. Loop over every segment
     centers = []
     volumes = []
-    pcas = []
     shape_pca = []
     for seg_lab in tqdm(segments_labels, desc="Calculating centers", unit="seg"):
         # 2.1 Get the segment data
@@ -66,17 +64,12 @@ def get_segments_data(
         # 2.4 Get the volumes
         seg_volumes = get_segment_volumes(seg_lab, seg_left, seg_right)
 
-        # 2.5 Get the pca for each segment
-        seg_pca = get_segment_pca(seg_lab, seg_left, seg_right)
-
         # 2.5. Store everything back into a list
         centers.append(seg_centers)
         volumes.append(seg_volumes)
-        pcas.append(seg_pca)
 
     centers = np.array(centers)
     volumes = np.array(volumes)
-    pcas = np.array(pcas)
     shape_pca = np.array(shape_pca)
 
     # 3. Builds the DF
@@ -86,12 +79,7 @@ def get_segments_data(
     save_path = save_mouse_results(mouse, data_dfs, mode)
     print(f"The mouse results where saved at {save_path}")
 
-    # 5. Save the pcas
-    pca_df = buid_pca_df(mouse, pcas, info_df)
-    pca_path = save_mouse_pca(mouse, pca_df, mode="pca")
-    print(f"The segments pca where saved at {pca_path}")
-
-    # 6. Save the shape-pcas if available
+    # 5. Save the shape-pcas if available
     if(len(shape_pca) > 0):
         shape_pca_df = buid_pca_df(mouse, shape_pca, info_df)
         shape_pca_path = save_mouse_pca(mouse, shape_pca_df, mode="shape_pca")
