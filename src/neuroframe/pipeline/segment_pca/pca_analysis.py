@@ -39,8 +39,11 @@ def get_segments_pca(
         pcas.append(seg_pca)
     pcas = np.array(pcas)
 
-    # 2. Store in a file
-    pca_df = buid_pca_df(mouse, pcas, info_df)
-    pca_path = save_mouse_pca(mouse, pca_df)
+    # 2. Builds the dfs
+    pca_dfs = buid_pca_df(mouse, pcas, info_df)
 
-    return pca_path
+    # 3. Store in a file
+    pca_path = save_mouse_pca(mouse, pca_dfs)
+    print(f"PCA Segment analysis was saved at {pca_path}")
+
+    return pca_dfs

@@ -31,7 +31,8 @@ from neuroframe.pipeline import (
     separate_segments,
     edt_segments,
     generate_bl_space,
-    get_segments_data
+    get_segments_data,
+    get_segments_pca
 )
 
 
@@ -150,3 +151,6 @@ if __name__ == '__main__':
     # 6. Calculates the center
     centers_df = get_segments_data(mouse, segmentation_info, TYPE_OF_CENTER, wt_mouse)
     centers_df = get_segments_data(mouse, segmentation_info, "inner")
+
+    # 7. Build the PCA excel for the segments volume
+    pca_df = get_segments_pca(mouse, segmentation_info)

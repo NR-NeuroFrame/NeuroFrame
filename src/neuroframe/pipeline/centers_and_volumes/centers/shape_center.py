@@ -2,16 +2,12 @@
 # 0. Section: IMPORTS
 # ================================================================
 import numpy as np
-from matplotlib import pyplot as plt
 
-
-from ....styling import alpha_red_cmap_256, alpha_blue_cmap_256
 from ....registrator import Registrator
 from ....mouse import Mouse
 from ...segment_pca import (
     PCASummary,
-    get_segment_pca,
-    get_volume_pca
+    get_segment_pca
 )
 from ..dataclasses import Center
 from .inner_center import get_inner_centers
@@ -70,92 +66,3 @@ def get_shape_centers(
     pca_data = get_segment_pca(seg_lab, wt_trs_left, wt_trs_right)
 
     return seg_center, pca_data
-
-
-
-
-
-
-def plot_compare_seg(volume, wt_volume):
-    main_slices = get_main_slices(volume)
-    main_slices_wt = get_main_slices(wt_volume)
-    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-
-    for idx, (orientation, slice) in enumerate(main_slices.items()):
-        target_ax = axes[idx]
-        target_ax.imshow(slice, cmap=alpha_red_cmap_256)
-        target_ax.imshow(main_slices_wt[orientation], cmap=alpha_blue_cmap_256)
-
-    # Add overall title and show plot
-    fig.suptitle("Comparing WT-MCI Segment shape")
-    plt.tight_layout()
-    plt.show()
-
-def quick_overlay(vol1, vol2, center1, center2, step=4, max_points=8000):
-    c1 = np.argwhere(vol1[::step, ::step, ::step] > 0)
-    c2 = np.argwhere(vol2[::step, ::step, ::step] > 0)
-
-    if len(c1) > max_points:
-        c1 = c1[np.random.choice(len(c1), max_points, replace=False)]
-    if len(c2) > max_points:
-        c2 = c2[np.random.choice(len(c2), max_points, replace=False)]
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(center1[0], center1[1], center1[2], s=5, alpha=1, label='center1')
-    ax.scatter(center2[0], center2[1], center2[2], s=5, alpha=1, label='center2')
-    ax.scatter(c1[:, 0], c1[:, 1], c1[:, 2], s=1, alpha=0.5, label='vol1')
-    ax.scatter(c2[:, 0], c2[:, 1], c2[:, 2], s=1, alpha=0.5, label='vol2')
-    ax.legend()
-    plt.show()
-
-def plot_pca_orientations(volume: np.ndarray, **kwargs):
-    # Compute PCA components for the volume
-    volume_pca = get_volume_pca(volume)
-
-    # Start the plotting
-    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-
-    # Get the main slices and plot PCA on each
-    main_slices = get_main_slices(volume)
-    for idx, (orientation, slice) in enumerate(main_slices.items()):
-        target_ax = axes[idx]
-        _plot_slice_pca(target_ax, slice, volume_pca, orientation.lower(), **kwargs)
-
-    # Add overall title and show plot
-    fig.suptitle("PCA Components on Middle Slices")
-    plt.tight_layout()
-    plt.show()
-
-def _plot_slice_pca(axes: plt.Axes, slice: np.ndarray, volume_pca: np.ndarray, orientation: str, **kwargs):
-    """Plot a single slice with PCA components overlaid as arrows."""
-    scale = kwargs.get('scale', 20)
-    colors = kwargs.get('colors', ['#B14E4E', '#4EB14E', '#4E4EB1'])
-
-    axes.imshow(slice, cmap='gray')
-    center_x, center_y = slice.shape[1] // 2, slice.shape[0] // 2
-    x, y = _get_vector_indecs(orientation)
-
-    for i in range(3):
-        axes.arrow(center_x, center_y,
-                    volume_pca[x, i] * scale,
-                    volume_pca[y, i] * scale,
-                    head_width=5, head_length=5, fc=colors[i], ec=colors[i])
-    axes.set_title(f"{orientation.title()} View")
-    axes.axis('off')
-
-def _get_vector_indecs(orientation: str):
-    """Get the indices of the PCA components to plot based on the slice orientation."""
-    orientation = orientation.lower()
-    if orientation == 'axial': return 2, 1
-    elif orientation == 'coronal': return 2, 0
-    elif orientation == 'sagittal': return 1, 0
-    else: raise ValueError("Orientation must be 'axial', 'coronal', or 'sagittal'.")
-
-def get_main_slices(volume: np.ndarray) -> dict:
-    mid_slices = {
-        'axial': volume[volume.shape[0] // 2, :, :],
-        'coronal': volume[:, volume.shape[1] // 2, :],
-        'sagittal': volume[:, :, volume.shape[2] // 2]
-    }
-    return mid_slices
