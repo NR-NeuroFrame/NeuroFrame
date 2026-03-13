@@ -41,7 +41,7 @@ def get_segments_data(
     volumes = []
     pcas = []
     shape_pca = []
-    for seg_lab in tqdm(segments_labels[1:5], desc="Calculating centers", unit="seg"):
+    for seg_lab in tqdm(segments_labels, desc="Calculating centers", unit="seg"):
         # 2.1 Get the segment data
         seg_lat = np.where(segmentations == seg_lab, segments_lateralized, 0)
         seg_left = np.where(seg_lat == 1, 1, 0)
@@ -62,7 +62,6 @@ def get_segments_data(
 
         # 2.3 Convert to bl-mm coordinates
         seg_centers.convert_center_to_bl(segments_bl)
-        print(seg_centers)
 
         # 2.4 Get the volumes
         seg_volumes = get_segment_volumes(seg_lab, seg_left, seg_right)
