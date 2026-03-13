@@ -28,17 +28,21 @@ def get_shape_centers(
     seg_right_nedt: np.ndarray,
     template_mouse: Mouse
 ) -> tuple:
-    # 0. If segment not present in WT just skip this (make all 0,0,0 ?)
-    if seg_lab not in template_mouse.segmentation.labels:
+    # 0. Get the WT Laterals
+    wt_seg = np.where(template_mouse.segmentation.data == seg_lab, template_mouse.hemisphere.data, 0)
+    wt_left = np.where(wt_seg == 1, 1, 0)
+    wt_right = np.where(wt_seg == 2, 1, 0)
+
+    # 1. If segment not present in WT just skip this (make all 0,0,0 ?)
+    conditions_to_skip_1 = seg_lab not in template_mouse.segmentation.labels
+    conditions_to_skip_2 = np.sum(seg_left_nedt) <= 0 or np.sum(seg_right_nedt) <= 0
+    conditions_to_skip_3 = np.sum(wt_left) <= 0 or np.sum(wt_right) <= 0
+    if conditions_to_skip_1 or conditions_to_skip_2 or conditions_to_skip_3:
         return (
             Center.empty(seg_lab),
             PCASummary.empty(seg_lab)
         )
 
-    # 1. Get the WT Laterals
-    wt_seg = np.where(template_mouse.segmentation.data == seg_lab, template_mouse.hemisphere.data, 0)
-    wt_left = np.where(wt_seg == 1, 1, 0)
-    wt_right = np.where(wt_seg == 2, 1, 0)
 
     seg_left = np.where(seg_left_nedt > 0, 1, 0)
     seg_right = np.where(seg_right_nedt > 0, 1, 0)
